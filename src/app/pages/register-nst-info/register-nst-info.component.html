@@ -1,0 +1,262 @@
+<div class="page-container">
+  <div class="page-title">
+    <mat-icon>assignment_turned_in</mat-icon>
+    <span>รับรายงานตัว/โอนย้าย นศท.</span>
+  </div>
+
+  <div class="subtitle" *ngIf="schoolName">ชื่อสถานศึกษาวิชาทหาร : {{ schoolName }}</div>
+
+  <!-- ค้นหาข้อมูล นศท. (จาก register_nst_info.jsp) -->
+  <mat-card class="section-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>search</mat-icon>
+      <mat-card-title>ค้นหาข้อมูล นศท.</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="form-row">
+        <mat-form-field appearance="fill" class="ff-small">
+          <mat-label>ชั้นปี (เดิม)</mat-label>
+          <mat-select [(ngModel)]="filterAtClass">
+            <mat-option value="">-เลือก-</mat-option>
+            <mat-option *ngFor="let y of classYears" [value]="y">{{ y }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="ff-small">
+          <mat-label>เพศ</mat-label>
+          <mat-select [(ngModel)]="filterSex">
+            <mat-option value="">--เลือก--</mat-option>
+            <mat-option value="M">ชาย</mat-option>
+            <mat-option value="F">หญิง</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="ff-wide">
+          <mat-label>ประเภทบัญชี</mat-label>
+          <mat-select [(ngModel)]="nstStatus">
+            <mat-option value="*">--- ทั้งหมด ---</mat-option>
+            <mat-option value="5">เลื่อนชั้น</mat-option>
+            <mat-option value="2">ซ้ำชั้น</mat-option>
+            <mat-optgroup label="รอรับสิทธิ">
+              <mat-option value="E5">รอรับสิทธิ → เลื่อนชั้น</mat-option>
+              <mat-option value="E2">รอรับสิทธิ → ซ้ำชั้น</mat-option>
+            </mat-optgroup>
+            <mat-optgroup label="โอนย้าย">
+              <mat-option value="35">โอนย้าย → เลื่อนชั้น</mat-option>
+              <mat-option value="32">โอนย้าย → ซ้ำชั้น</mat-option>
+              <mat-option value="3E5">โอนย้าย → รอรับสิทธิ → เลื่อนชั้น</mat-option>
+              <mat-option value="3E2">โอนย้าย → รอรับสิทธิ → ซ้ำชั้น</mat-option>
+            </mat-optgroup>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="search-actions">
+          <button mat-flat-button color="primary" (click)="search()">
+            <mat-icon>search</mat-icon>
+            ค้นหา
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- ผลการค้นหา: 2-list layout -->
+  <ng-container *ngIf="hasSearched">
+
+    <!-- ปุ่มพิมพ์บัญชี -->
+    <mat-card class="section-card" *ngIf="hasSearched">
+      <mat-card-content class="print-row">
+        <button mat-flat-button color="primary" [disabled]="printDisabled" (click)="printReport()">
+          <mat-icon>print</mat-icon>
+          {{ getPrintLabel() }}
+        </button>
+      </mat-card-content>
+    </mat-card>
+
+    <div *ngIf="isLoading" class="loading">
+      <mat-spinner diameter="40"></mat-spinner>
+      <div class="loading-text">กำลังโหลดข้อมูล...</div>
+    </div>
+
+    <div class="two-list-layout" *ngIf="!isLoading">
+
+      <!-- คอลัมน์ซ้าย: โอนย้ายเข้า + ยังไม่ได้รายงานตัว -->
+      <div class="left-column">
+
+        <!-- Section โอนย้ายเข้า (แสดงเมื่อเป็นโอนย้ายหรือทั้งหมด) -->
+        <mat-card class="section-card transfer-card" *ngIf="isTransferMode">
+          <mat-card-header (click)="showTransferSection = !showTransferSection" class="clickable">
+            <mat-icon mat-card-avatar>swap_horiz</mat-icon>
+            <mat-card-title>
+              <span *ngIf="nstStatus.startsWith('3')">นศท. โอนย้ายเข้า ระหว่างรายงานตัว</span>
+              <span *ngIf="nstStatus === '*'">กรณี นศท. โอนย้ายเข้า ระหว่างรายงานตัว</span>
+            </mat-card-title>
+            <span class="spacer"></span>
+            <mat-icon class="chev">{{ showTransferSection || nstStatus.startsWith('3') ? 'expand_less' : 'expand_more' }}</mat-icon>
+          </mat-card-header>
+
+          <mat-card-content *ngIf="showTransferSection || nstStatus.startsWith('3')">
+            <div class="form-row">
+              <mat-form-field appearance="fill" class="ff-wide">
+                <mat-label>เลขประจำตัว ปชช. (13) หรือ รหัส นศท. (10)</mat-label>
+                <input matInput type="text" [(ngModel)]="transferRegId" />
+              </mat-form-field>
+
+              <mat-form-field appearance="fill" class="ff-wide">
+                <mat-label>สถานศึกษา</mat-label>
+                <input matInput type="text" [(ngModel)]="transferSchoolName" readonly />
+                <input type="hidden" [(ngModel)]="transferSchoolId" />
+              </mat-form-field>
+            </div>
+
+            <div class="meta-row">
+              <div class="pill">ชั้นปี: {{ filterAtClass || '-' }}</div>
+              <div class="pill">เพศ: {{ filterSex === 'M' ? 'ชาย' : filterSex === 'F' ? 'หญิง' : '-' }}</div>
+              <div class="pill">บัญชี: {{ getNstStatusLabel() }}</div>
+            </div>
+
+            <div class="action-row">
+              <button mat-flat-button color="primary" (click)="searchTransferNst()">
+                <mat-icon>search</mat-icon>
+                ค้นหา
+              </button>
+            </div>
+
+            <mat-divider class="divider" *ngIf="transferNstInfo"></mat-divider>
+
+            <div *ngIf="transferNstInfo" class="transfer-found">
+              <div class="kv-grid">
+                <div class="kv"><div class="k">เลขประจำตัว ปชช.</div><div class="v">{{ transferNstInfo.pid }}</div></div>
+                <div class="kv"><div class="k">รหัส นศท.</div><div class="v">{{ transferNstInfo.nid }}</div></div>
+                <div class="kv"><div class="k">ชื่อ - สกุล</div><div class="v">{{ transferNstInfo.name }}</div></div>
+                <div class="kv"><div class="k">สถานะ</div><div class="v">{{ transferNstInfo.status }}</div></div>
+              </div>
+
+              <mat-form-field appearance="fill" class="doc-field">
+                <mat-label>เลขที่หนังสือ</mat-label>
+                <input matInput type="text" [(ngModel)]="transferDoc" />
+              </mat-form-field>
+
+              <div class="action-row">
+                <button mat-flat-button color="primary" (click)="addTransferNst()" title="คลิก เพื่อโอนย้าย นศท.">
+                  <mat-icon>person_add</mat-icon>
+                  โอนย้ายเข้า
+                </button>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- List ยังไม่ได้รายงานตัว (ซ้าย) -->
+        <div class="nst-list-panel" *ngIf="showNReqList">
+          <div class="list-header nreq-header">
+            <mat-icon>list</mat-icon>
+            <span>รายชื่อ นศท. <span class="badge red">ยังไม่ได้รายงานตัว</span></span>
+            <span class="count">{{ nreqList.length }} นาย</span>
+          </div>
+          <div class="list-hint">สามารถคลิกเลือกหลายรายการ</div>
+          <div class="table-scroll" *ngIf="nreqList.length > 0">
+            <table mat-table [dataSource]="nreqList" class="mat-table-compact">
+              <ng-container matColumnDef="idx">
+                <th mat-header-cell *matHeaderCellDef>ลำดับ</th>
+                <td mat-cell *matCellDef="let row; let i = index">{{ i + 1 }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="rd25">
+                <th mat-header-cell *matHeaderCellDef>RD25</th>
+                <td mat-cell *matCellDef="let row">{{ row.rd25 }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="nstId">
+                <th mat-header-cell *matHeaderCellDef>รหัส นศท.</th>
+                <td mat-cell *matCellDef="let row">{{ row.nstId }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef>ชื่อ - สกุล</th>
+                <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="nreqDisplayedColumns"></tr>
+              <tr
+                mat-row
+                *matRowDef="let row; columns: nreqDisplayedColumns"
+                class="row-click"
+                [class.selected]="isNReqSelected(row.pid)"
+                [ngStyle]="{ 'background-color': isNReqSelected(row.pid) ? '#b3d9ff' : row.bgColor }"
+                (click)="toggleNReqSelection(row.pid)"
+                (dblclick)="showNstInfo(row)"
+              ></tr>
+            </table>
+          </div>
+          <div *ngIf="nreqList.length === 0" class="list-empty">ไม่มีข้อมูล</div>
+        </div>
+      </div>
+
+      <!-- คอลัมน์กลาง: ปุ่มย้ายซ้าย-ขวา -->
+      <div class="center-column" *ngIf="showNReqList">
+        <button
+          mat-mini-fab
+          color="primary"
+          class="arrow-btn"
+          (click)="removeFromReq()"
+          title="นำ นศท. ออกจากรายงานตัว"
+          *ngIf="hasSearched && !isLoading"
+        >
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <button mat-mini-fab color="primary" class="arrow-btn" (click)="addToReq()" title="นำ นศท. เข้ารายงานตัว">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+
+      <!-- คอลัมน์ขวา: ระหว่างรายงานตัว -->
+      <div class="right-column">
+        <div class="nst-list-panel">
+          <div class="list-header req-header">
+            <mat-icon>list</mat-icon>
+            <span>รายชื่อ นศท. <span class="badge green">ระหว่างรายงานตัว</span></span>
+            <span class="count">{{ reqList.length }} นาย</span>
+          </div>
+          <div class="list-hint">สามารถคลิกเลือกหลายรายการ</div>
+          <div class="table-scroll" *ngIf="reqList.length > 0">
+            <table mat-table [dataSource]="reqList" class="mat-table-compact">
+              <ng-container matColumnDef="idx">
+                <th mat-header-cell *matHeaderCellDef>ลำดับ</th>
+                <td mat-cell *matCellDef="let row; let i = index">{{ i + 1 }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="rd25">
+                <th mat-header-cell *matHeaderCellDef>RD25</th>
+                <td mat-cell *matCellDef="let row">{{ row.rd25 }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="nstId">
+                <th mat-header-cell *matHeaderCellDef>รหัส นศท.</th>
+                <td mat-cell *matCellDef="let row">{{ row.nstId }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef>ชื่อ - สกุล</th>
+                <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="reqDisplayedColumns"></tr>
+              <tr
+                mat-row
+                *matRowDef="let row; columns: reqDisplayedColumns"
+                class="row-click"
+                [class.selected]="isReqSelected(row.pid)"
+                [ngStyle]="{ 'background-color': isReqSelected(row.pid) ? '#b3d9ff' : row.bgColor }"
+                (click)="toggleReqSelection(row.pid)"
+                (dblclick)="showNstInfo(row)"
+              ></tr>
+            </table>
+          </div>
+          <div *ngIf="reqList.length === 0" class="list-empty">ไม่มีข้อมูล</div>
+        </div>
+      </div>
+
+    </div>
+  </ng-container>
+</div>

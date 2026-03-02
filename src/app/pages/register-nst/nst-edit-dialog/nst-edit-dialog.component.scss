@@ -1,0 +1,5 @@
+.edit-content { min-width: 600px; max-height: 70vh; }
+.section-title { color: #6d7856; font-size: 15px; margin: 16px 0 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+.full-width { grid-column: 1 / -1; }
+mat-form-field { width: 100%; }

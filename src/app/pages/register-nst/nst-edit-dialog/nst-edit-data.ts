@@ -1,0 +1,29 @@
+export interface NstEditData {
+  nstId: string;
+  regPid: string;
+  regTitle: string;
+  regFname: string;
+  regLname: string;
+  regBirthday: string;
+  regSex: string;
+  nstAtClass: string;
+  nstStatusId: string;
+  regNat: string;
+  regNation: string;
+  regReleg: string;
+  regAddr: string;
+  regMm: string;
+  regThanon: string;
+  regTrok: string;
+  regSoi: string;
+  regProvinceName: string;
+  regAmphurName: string;
+  regDistricName: string;
+  regPhone: string;
+  regEmail: string;
+  regFaFname: string;
+  regFaLname: string;
+  regMaFname: string;
+  regMaLname: string;
+  schoolName: string;
+}

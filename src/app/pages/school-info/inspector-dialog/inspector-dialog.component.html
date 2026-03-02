@@ -1,0 +1,16 @@
+<h2 mat-dialog-title>เพิ่มรายชื่อ ผกท./เจ้าหน้าที่</h2>
+<mat-dialog-content>
+  <p class="hint">กรุณาใส่เลขประจำตัวประชาชน (เฉพาะเลขอารบิก)</p>
+  <mat-form-field appearance="outline" style="width:100%">
+    <mat-label>เลขประจำตัวประชาชน</mat-label>
+    <input matInput [(ngModel)]="data.pid" maxlength="13" placeholder="กรอกเลข 13 หลัก">
+    <mat-hint>{{ data.pid.length }}/13</mat-hint>
+  </mat-form-field>
+  <p class="error" *ngIf="errorMsg">{{ errorMsg }}</p>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>ยกเลิก</button>
+  <button mat-raised-button color="primary" (click)="submit()" [disabled]="isLoading">
+    <mat-icon>person_add</mat-icon> เพิ่มรายชื่อ
+  </button>
+</mat-dialog-actions>

@@ -1,0 +1,90 @@
+<div class="page-container">
+  <div class="page-title">
+    <mat-icon>swap_horiz</mat-icon>
+    <span>โอนย้ายสถานศึกษา</span>
+  </div>
+
+  <div class="subtitle" *ngIf="schoolName">ชื่อสถานศึกษาวิชาทหาร : {{ schoolName }}</div>
+
+  <!-- รายการโอนย้าย (จาก transfer_nst.jsp) -->
+  <mat-card class="section-card" *ngIf="!showDetail">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>list</mat-icon>
+      <mat-card-title>รายการโอนย้าย (ปีการศึกษา {{ currentYear }})</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngIf="isLoading" class="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <div class="loading-text">กำลังโหลดข้อมูล...</div>
+      </div>
+
+      <div class="table-container" *ngIf="!isLoading && transferList.length > 0">
+        <table mat-table [dataSource]="transferList" class="mat-table-compact">
+          <ng-container matColumnDef="idx">
+            <th mat-header-cell *matHeaderCellDef>ลำดับ</th>
+            <td mat-cell *matCellDef="let row; let i = index">{{ i + 1 }}</td>
+          </ng-container>
+          <ng-container matColumnDef="nstId">
+            <th mat-header-cell *matHeaderCellDef>รหัส นศท.</th>
+            <td mat-cell *matCellDef="let row">
+              <a class="link" (click)="viewDetail(row)">{{ row.nstId }}</a>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>ชื่อ นามสกุล</th>
+            <td mat-cell *matCellDef="let row">{{ getFullName(row) }}</td>
+          </ng-container>
+          <ng-container matColumnDef="class">
+            <th mat-header-cell *matHeaderCellDef>ชั้นปี</th>
+            <td mat-cell *matCellDef="let row">{{ row.nstAtClass }}</td>
+          </ng-container>
+          <ng-container matColumnDef="from">
+            <th mat-header-cell *matHeaderCellDef>โอนมาจาก</th>
+            <td mat-cell *matCellDef="let row">{{ row.fromSchoolName }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['idx','nstId','name','class','from']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['idx','nstId','name','class','from'];"></tr>
+        </table>
+      </div>
+
+      <div *ngIf="!isLoading && transferList.length === 0" class="empty-state">
+        <mat-icon>info</mat-icon>
+        <div>ไม่พบข้อมูล การโอนย้ายสถานศึกษา ในปี พ.ศ. {{ currentYear }} !!!</div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- รายละเอียดการโอนย้าย (จาก transfer_nst_info.jsp) -->
+  <mat-card class="section-card" *ngIf="showDetail">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>description</mat-icon>
+      <mat-card-title>ข้อมูลการโอนย้าย นศท.</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngIf="isLoadingDetail" class="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <div class="loading-text">กำลังโหลดข้อมูล...</div>
+      </div>
+
+      <div *ngIf="!isLoadingDetail && detail">
+        <div class="kv-grid">
+          <div class="kv"><div class="k">ชื่อ-นามสกุล</div><div class="v">{{ detail.title }} {{ detail.fname }} {{ detail.lname }}</div></div>
+          <div class="kv"><div class="k">รหัสประจำตัว นศท.</div><div class="v">{{ detail.nstId }}</div></div>
+          <div class="kv"><div class="k">ชั้นปี</div><div class="v">{{ detail.nstAtClass }}</div></div>
+          <div class="kv"><div class="k">โอนมาจากสถานศึกษา</div><div class="v">{{ detail.fromSchoolName }}</div></div>
+          <div class="kv"><div class="k">มายังสถานศึกษา</div><div class="v">{{ detail.toSchoolName }}</div></div>
+          <div class="kv"><div class="k">วันที่โอน</div><div class="v">{{ detail.transferDate }}</div></div>
+          <div class="kv"><div class="k">เลขที่คำสั่ง</div><div class="v">{{ detail.commandNo }}</div></div>
+        </div>
+
+        <div class="action-row">
+          <button mat-button (click)="closeDetail()">
+            <mat-icon>arrow_back</mat-icon>
+            กลับ
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

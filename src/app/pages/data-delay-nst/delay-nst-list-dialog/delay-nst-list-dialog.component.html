@@ -1,0 +1,23 @@
+<h2 mat-dialog-title>รายชื่อ นศท. - ผลัดฝึกที่ {{ data.trainNo }} ชั้นปี {{ data.atClass }} ({{ data.sex === 'M' ? 'ชาย' : 'หญิง' }})</h2>
+<mat-dialog-content>
+  <div *ngIf="isLoading" style="text-align:center;padding:24px">
+    <mat-spinner diameter="36"></mat-spinner>
+  </div>
+  <table *ngIf="!isLoading && nstList.length > 0" class="nst-table">
+    <thead>
+      <tr><th>ลำดับ</th><th>รหัส นศท.</th><th>เลข ปชช.</th><th>ชื่อ-นามสกุล</th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let nst of nstList; let i = index">
+        <td>{{ i + 1 }}</td>
+        <td>{{ nst.nstId }}</td>
+        <td>{{ nst.regPid }}</td>
+        <td>{{ nst.regTitle }} {{ nst.regFname }} {{ nst.regLname }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <p *ngIf="!isLoading && nstList.length === 0" style="text-align:center;color:#999;padding:16px">ไม่พบข้อมูล</p>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-raised-button mat-dialog-close color="primary">ปิด</button>
+</mat-dialog-actions>

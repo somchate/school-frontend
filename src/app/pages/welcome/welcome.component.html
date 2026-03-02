@@ -1,0 +1,87 @@
+<div class="page-container">
+  <div class="page-title">
+    <mat-icon>home</mat-icon>
+    <span>หน้าแรก</span>
+  </div>
+
+  <mat-card class="hero-card">
+    <mat-card-content>
+      <div class="hero">
+        <div class="hero-title">ระบบงานทะเบียนพล นศท.</div>
+        <div class="hero-subtitle">หน่วยบัญชาการรักษาดินแดน</div>
+
+        <div class="hero-meta">
+          <div class="pill" *ngIf="schoolName">
+            <mat-icon>school</mat-icon>
+            <span>{{ schoolName }}</span>
+          </div>
+          <div class="pill" *ngIf="currentYear">
+            <mat-icon>calendar_today</mat-icon>
+            <span>ปีการศึกษา {{ currentYear }}</span>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <div class="loading-text">กำลังโหลดข้อมูล...</div>
+  </div>
+
+  <div class="grid" *ngIf="!isLoading">
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>event</mat-icon>
+        <mat-card-title>กำหนดวันและสถานที่ รับสมัคร / รายงานตัว</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="table-container" *ngIf="schedules.length > 0">
+          <table mat-table [dataSource]="schedules" class="schedule-table">
+            <ng-container matColumnDef="index">
+              <th mat-header-cell *matHeaderCellDef>ลำดับ</th>
+              <td mat-cell *matCellDef="let row; let i = index">{{ i + 1 }}</td>
+            </ng-container>
+            <ng-container matColumnDef="type">
+              <th mat-header-cell *matHeaderCellDef>ประเภท</th>
+              <td mat-cell *matCellDef="let row">{{ row.type }}</td>
+            </ng-container>
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef>วันที่</th>
+              <td mat-cell *matCellDef="let row">{{ row.date }}</td>
+            </ng-container>
+            <ng-container matColumnDef="time">
+              <th mat-header-cell *matHeaderCellDef>เวลา</th>
+              <td mat-cell *matCellDef="let row">{{ row.time }}</td>
+            </ng-container>
+            <ng-container matColumnDef="place">
+              <th mat-header-cell *matHeaderCellDef>สถานที่</th>
+              <td mat-cell *matCellDef="let row">{{ row.place }}</td>
+            </ng-container>
+            <ng-container matColumnDef="note">
+              <th mat-header-cell *matHeaderCellDef>หมายเหตุ</th>
+              <td mat-cell *matCellDef="let row">{{ row.note }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="['index','type','date','time','place','note']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['index','type','date','time','place','note'];"></tr>
+          </table>
+        </div>
+
+        <div *ngIf="schedules.length === 0" class="empty-state">
+          <mat-icon>event_busy</mat-icon>
+          <div>ยังไม่มีข้อมูลกำหนดการ</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="section-card" *ngIf="schoolAddr">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>location_on</mat-icon>
+        <mat-card-title>ที่ตั้งสถานศึกษาวิชาทหาร</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="address">{{ schoolAddr }}</div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

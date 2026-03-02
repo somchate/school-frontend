@@ -1,0 +1,83 @@
+@use '../shared-styles.scss' as *;
+
+.subtitle {
+  margin: -12px 0 16px;
+  color: #475569;
+  font-size: 13px;
+}
+
+.section-card {
+  margin-bottom: 16px;
+
+  mat-card-header {
+    mat-icon[mat-card-avatar] {
+      background: rgba(0, 98, 65, 0.12);
+      color: #006241;
+      border-radius: 12px;
+      padding: 8px;
+      font-size: 22px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.form-row mat-form-field {
+  flex: 0 1 220px;
+  min-width: 160px;
+}
+
+.search-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 28px 0;
+}
+
+.loading-text {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.empty-state {
+  padding: 18px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.mat-table-compact {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    gap: 8px;
+  }
+
+  .form-row mat-form-field {
+    flex-basis: 180px;
+    min-width: 140px;
+  }
+}

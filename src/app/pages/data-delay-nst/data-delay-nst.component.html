@@ -1,0 +1,114 @@
+<div class="page-container">
+  <div class="page-title">
+    <mat-icon>event_note</mat-icon>
+    <span>ข้อมูลผลัดฝึก</span>
+  </div>
+
+  <div class="subtitle" *ngIf="schoolName">ชื่อสถานศึกษาวิชาทหาร : {{ schoolName }}</div>
+
+  <!-- ตารางรายการผลัดฝึก (จาก data_delay_nst.jsp) -->
+  <mat-card class="section-card" *ngIf="!showDetail">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>list</mat-icon>
+      <mat-card-title>ตารางการจัดผลัดฝึกภาคสนาม (ปีการศึกษา {{ currentYear }})</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngIf="isLoading" class="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <div class="loading-text">กำลังโหลดข้อมูล...</div>
+      </div>
+
+      <div class="table-container" *ngIf="!isLoading && delayList.length > 0">
+        <table mat-table [dataSource]="delayList" class="mat-table-compact">
+          <ng-container matColumnDef="idx">
+            <th mat-header-cell *matHeaderCellDef>ลำดับ</th>
+            <td mat-cell *matCellDef="let row; let i = index">{{ i + 1 }}</td>
+          </ng-container>
+          <ng-container matColumnDef="trainNo">
+            <th mat-header-cell *matHeaderCellDef>ผลัดฝึกที่</th>
+            <td mat-cell *matCellDef="let row">{{ row.trainNo }}</td>
+          </ng-container>
+          <ng-container matColumnDef="atClass">
+            <th mat-header-cell *matHeaderCellDef>ชั้นปี</th>
+            <td mat-cell *matCellDef="let row">{{ row.atClass }}</td>
+          </ng-container>
+          <ng-container matColumnDef="sex">
+            <th mat-header-cell *matHeaderCellDef>เพศ</th>
+            <td mat-cell *matCellDef="let row">{{ getSexText(row.regSex) }}</td>
+          </ng-container>
+          <ng-container matColumnDef="action">
+            <th mat-header-cell *matHeaderCellDef>รายชื่อ นศท.</th>
+            <td mat-cell *matCellDef="let row">
+              <a class="link" (click)="viewDetail(row)">รายละเอียด</a>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['idx','trainNo','atClass','sex','action']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['idx','trainNo','atClass','sex','action'];"></tr>
+        </table>
+      </div>
+
+      <div *ngIf="!isLoading && delayList.length === 0" class="empty-state">
+        <mat-icon>info</mat-icon>
+        <div>ไม่พบข้อมูลจัดพลัดฝึกของ {{ schoolName }} !!!</div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- รายละเอียดผลัดฝึก (จาก add_list_nst.jsp) -->
+  <mat-card class="section-card" *ngIf="showDetail">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>description</mat-icon>
+      <mat-card-title>รายละเอียดผลัดฝึก</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngIf="isLoadingDetail" class="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <div class="loading-text">กำลังโหลดข้อมูล...</div>
+      </div>
+
+      <div *ngIf="!isLoadingDetail && groundDetail">
+        <div class="kv-grid">
+          <div class="kv"><div class="k">ปีการศึกษา</div><div class="v">{{ groundDetail.regYear }}</div></div>
+          <div class="kv"><div class="k">ชั้นปี</div><div class="v">{{ groundDetail.atClass }}</div></div>
+          <div class="kv"><div class="k">เพศ</div><div class="v">{{ getSexText(groundDetail.regSex) }}</div></div>
+          <div class="kv"><div class="k">ประเภทการฝึก</div><div class="v">{{ getTrainTypeText(groundDetail.trainType) }}</div></div>
+          <div class="kv"><div class="k">ผลัดฝึกที่</div><div class="v">{{ groundDetail.trainNo }}</div></div>
+          <div class="kv"><div class="k">กองพันปกครองที่</div><div class="v">{{ groundDetail.unitNo }}</div></div>
+          <div class="kv"><div class="k">หน่วยฝึก</div><div class="v">{{ groundDetail.remarks }}</div></div>
+          <div class="kv"><div class="k">วันที่เริ่ม</div><div class="v">{{ groundDetail.dateStart }}</div></div>
+          <div class="kv"><div class="k">วันที่สิ้นสุด</div><div class="v">{{ groundDetail.dateEnd }}</div></div>
+        </div>
+
+        <div class="action-row">
+          <button mat-button (click)="goBack()">
+            <mat-icon>arrow_back</mat-icon>
+            กลับ
+          </button>
+        </div>
+
+        <mat-divider class="divider"></mat-divider>
+
+        <div class="table-container" *ngIf="nstList.length > 0">
+          <table mat-table [dataSource]="nstList" class="mat-table-compact">
+            <ng-container matColumnDef="idx">
+              <th mat-header-cell *matHeaderCellDef>ลำดับ</th>
+              <td mat-cell *matCellDef="let row; let i = index">{{ i + 1 }}</td>
+            </ng-container>
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>ชื่อ - นามสกุล</th>
+              <td mat-cell *matCellDef="let row">{{ row.regTitle }}{{ row.regFname }} {{ row.regLname }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="['idx','name']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['idx','name'];"></tr>
+          </table>
+        </div>
+
+        <div class="empty-state" *ngIf="nstList.length === 0">
+          <mat-icon>person_off</mat-icon>
+          <div>ไม่พบข้อมูล</div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

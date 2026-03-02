@@ -1,0 +1,73 @@
+<div class="dialog-container">
+  <h2 mat-dialog-title>แก้ไขข้อมูลนักเรียน</h2>
+
+  <mat-dialog-content>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>เลขประจำตัวประชาชน:</label>
+        <input type="text" class="form-control" [value]="student.regPid" readonly>
+      </div>
+
+      <div class="form-group">
+        <label>คำนำหน้า:</label>
+        <input type="text" class="form-control" [(ngModel)]="student.regTitle">
+      </div>
+
+      <div class="form-group">
+        <label>ชื่อ:</label>
+        <input type="text" class="form-control" [(ngModel)]="student.regFname">
+      </div>
+
+      <div class="form-group">
+        <label>นามสกุล:</label>
+        <input type="text" class="form-control" [(ngModel)]="student.regLname">
+      </div>
+
+      <div class="form-group">
+        <label>เพศ:</label>
+        <select class="form-control" [(ngModel)]="student.regSex">
+          <option value="M">ชาย</option>
+          <option value="F">หญิง</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>วันเกิด:</label>
+        <mat-form-field appearance="outline" class="datepicker-field">
+          <input matInput [matDatepicker]="picker" [(ngModel)]="birthdayDate" placeholder="เลือกวันเกิด">
+          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <div class="form-group">
+        <label>เบอร์โทร นร.:</label>
+        <input type="text" class="form-control" [(ngModel)]="student.telReg">
+      </div>
+
+      <div class="form-group">
+        <label>เบอร์โทร ผู้ปกครอง:</label>
+        <input type="text" class="form-control" [(ngModel)]="student.telParents">
+      </div>
+
+      <div class="form-group">
+        <label>สถานะ:</label>
+        <select class="form-control" [(ngModel)]="student.regStatusId">
+          <option value="01">สมัคร</option>
+          <option value="02">ผ่านการคัดเลือก</option>
+          <option value="03">ไม่ผ่าน</option>
+          <option value="10">ขึ้นทะเบียน</option>
+        </select>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button class="btn btn-secondary" (click)="onCancel()">
+      <i class="fas fa-times"></i> ยกเลิก
+    </button>
+    <button class="btn btn-success" (click)="onSave()">
+      <i class="fas fa-save"></i> บันทึก
+    </button>
+  </mat-dialog-actions>
+</div>

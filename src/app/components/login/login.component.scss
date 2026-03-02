@@ -1,0 +1,553 @@
+// Override Material form field font and styling
+::ng-deep {
+  .mat-mdc-form-field {
+    font-family: 'Kanit', sans-serif !important;
+  }
+  
+  .mat-mdc-form-field-label,
+  .mat-mdc-floating-label {
+    font-family: 'Kanit', sans-serif !important;
+    font-weight: 300;
+  }
+  
+  .mat-mdc-input-element {
+    font-family: 'Kanit', sans-serif !important;
+    font-weight: 400;
+  }
+  
+  .mat-mdc-button {
+    font-family: 'Kanit', sans-serif !important;
+  }
+  
+  .mat-icon {
+    font-family: 'Material Icons' !important;
+  }
+
+  // Modern rounded and 3D input styling - unified field
+  .mat-mdc-text-field-wrapper {
+    border-radius: 16px !important;
+    background-color: white !important;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08),
+                0 1px 3px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+
+    // Use MDC shape variables for rounded corners
+    --mdc-shape-small: 16px;
+    --mdc-outlined-text-field-container-shape: 16px;
+    --mdc-outlined-text-field-outline-color: rgba(0, 112, 74, 0.3);
+    --mdc-outlined-text-field-outline-width: 2px;
+    --mdc-outlined-text-field-hover-outline-color: #00704A;
+    --mdc-outlined-text-field-hover-outline-width: 2px;
+    --mdc-outlined-text-field-focus-outline-color: #00704A;
+    --mdc-outlined-text-field-focus-outline-width: 2px;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 112, 74, 0.15),
+                  0 2px 6px rgba(0, 112, 74, 0.1);
+      transform: translateY(-1px);
+    }
+  }
+
+  .mat-mdc-form-field.mat-focused {
+    .mat-mdc-text-field-wrapper {
+      box-shadow: 0 4px 16px rgba(0, 112, 74, 0.2),
+                  0 2px 8px rgba(0, 112, 74, 0.15),
+                  0 0 0 3px rgba(0, 112, 74, 0.1);
+      transform: translateY(-2px);
+    }
+  }
+
+  .mat-mdc-form-field-infix {
+    padding: 16px 16px 16px 0 !important;
+    min-height: 56px !important;
+  }
+
+  .mat-mdc-input-element {
+    padding: 0 !important;
+    height: auto !important;
+  }
+
+  // Icon prefix styling - integrated with input
+  .mat-mdc-form-field-icon-prefix {
+    padding-left: 16px;
+    padding-right: 0;
+    margin-right: 12px;
+    color: #00704A;
+    
+    mat-icon {
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+    }
+  }
+
+  // Remove gap between icon and input
+  .mat-mdc-form-field-icon-prefix + .mat-mdc-form-field-text-prefix,
+  .mat-mdc-form-field-icon-prefix ~ .mat-mdc-form-field-infix {
+    padding-left: 0 !important;
+  }
+
+  // Hint text styling
+  .mat-mdc-form-field-hint-wrapper,
+  .mat-mdc-form-field-error-wrapper {
+    padding: 0 12px;
+    font-family: 'Kanit', sans-serif;
+    font-weight: 300;
+    font-size: 0.85rem;
+  }
+
+  // Disabled state
+  .mat-mdc-form-field.mat-form-field-disabled {
+    .mat-mdc-text-field-wrapper {
+      background: #f5f5f5;
+      opacity: 0.7;
+    }
+  }
+}
+
+// Starbucks Green & White Color Variables
+$starbucks-green: #00704A;
+$starbucks-light-green: #00A862;
+$starbucks-dark-green: #005A3C;
+$starbucks-white: #FFFFFF;
+$starbucks-cream: #F7F7F7;
+$starbucks-accent: #D4AF37;
+
+// Login Wrapper
+.login-wrapper {
+  min-height: 100vh;
+  background: $starbucks-white;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(0, 168, 98, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(0, 112, 74, 0.05) 0%, transparent 50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  font-family: 'Kanit', sans-serif;
+}
+
+// Header
+.login-header {
+  margin: 30px 0;
+  text-align: center;
+  color: $starbucks-green;
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+
+    .logo {
+      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+    }
+
+    .header-text {
+      text-align: left;
+
+      h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+        font-family: 'Kanit', sans-serif;
+        color: $starbucks-green;
+      }
+
+      .subtitle {
+        margin: 5px 0 0 0;
+        font-size: 1rem;
+        font-weight: 400;
+        font-family: 'Kanit', sans-serif;
+        color: $starbucks-dark-green;
+      }
+    }
+  }
+}
+
+// Error Container
+.error-container {
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 20px;
+
+  .error-card {
+    background: #f44336;
+    color: white;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    mat-icon {
+      font-size: 24px;
+    }
+  }
+}
+
+// Cards Container
+.cards-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+// Login Card
+.login-card {
+  background: $starbucks-white;
+  border-radius: 24px !important;
+  box-shadow: 0 8px 32px rgba(0, 112, 74, 0.12),
+              0 4px 16px rgba(0, 112, 74, 0.08),
+              0 0 0 1px rgba(0, 112, 74, 0.08) !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+
+  // Fix for unwanted phantom borders/artifacts from Material
+  &::before, &::after {
+    display: none !important;
+  }
+
+  // Remove any MDC card specific artifacts
+  .mat-mdc-card-ripple {
+    display: none !important;
+  }
+
+  .mdc-elevation-overlay {
+    display: none !important;
+  }
+
+  &.single-card {
+    width: 480px;
+    max-width: 90vw;
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 48px rgba(0, 112, 74, 0.15),
+                0 6px 24px rgba(0, 112, 74, 0.12),
+                0 0 0 1px rgba(0, 112, 74, 0.12) !important;
+  }
+
+  // Toggle Container
+  .toggle-container {
+    padding: 20px 20px 0;
+    display: flex;
+    justify-content: center;
+    background: $starbucks-white;
+    position: relative;
+    z-index: 2;
+
+    .toggle-button {
+      width: 100%;
+      height: 52px;
+      border-radius: 26px;
+      border: 2px solid $starbucks-green;
+      color: $starbucks-green;
+      font-family: 'Kanit', sans-serif;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0, 112, 74, 0.1),
+                  0 1px 3px rgba(0, 112, 74, 0.08);
+
+      &:hover {
+        background: rgba(0, 112, 74, 0.08);
+        border-color: $starbucks-dark-green;
+        color: $starbucks-dark-green;
+        box-shadow: 0 4px 12px rgba(0, 112, 74, 0.2),
+                    0 2px 6px rgba(0, 112, 74, 0.15);
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 6px rgba(0, 112, 74, 0.15);
+      }
+
+      mat-icon {
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
+      }
+    }
+  }
+
+  mat-card-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 24px 16px;
+    background: linear-gradient(135deg, $starbucks-light-green 0%, $starbucks-dark-green 100%);
+    color: white;
+    border-radius: 24px 24px 0 0;
+    position: relative;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, 
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        rgba(255, 255, 255, 0) 100%);
+    }
+
+    .card-icon {
+      width: 80px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 15px;
+
+      mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        color: white;
+      }
+    }
+
+    mat-card-title {
+      font-size: 1.5rem;
+      font-weight: 500;
+      font-family: 'Kanit', sans-serif;
+      margin: 0 !important;
+      text-align: center;
+    }
+
+    mat-card-subtitle {
+      color: rgba(255, 255, 255, 0.9) !important;
+      font-family: 'Kanit', sans-serif;
+      font-weight: 300;
+      text-align: center;
+      margin-top: 5px !important;
+    }
+  }
+
+  mat-card-content {
+    padding: 30px 20px;
+    background: $starbucks-white;
+    position: relative;
+    z-index: 2;
+  }
+
+  mat-card-footer {
+    padding: 15px 20px;
+    background: $starbucks-white !important;
+    border-radius: 0 0 24px 24px !important;
+    border-top: 1px solid rgba(0, 112, 74, 0.08);
+    position: relative;
+    z-index: 1;
+    margin: 0 !important;
+    overflow: hidden;
+
+    .footer-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+
+      p {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #666;
+        font-size: 0.9rem;
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+      }
+
+      .footer-toggle-text {
+        color: $starbucks-green;
+        font-family: 'Kanit', sans-serif;
+        font-weight: 400;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+
+        &:hover {
+          color: $starbucks-dark-green;
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}
+
+// Login Form
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  .full-width {
+    width: 100%;
+  }
+
+  mat-form-field {
+    mat-icon[matPrefix] {
+      margin-right: 8px;
+      color: $starbucks-green;
+    }
+  }
+
+  .login-button {
+    height: 56px;
+    font-size: 1.05rem;
+    font-weight: 500;
+    font-family: 'Kanit', sans-serif;
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(135deg, $starbucks-light-green 0%, $starbucks-green 100%);
+    box-shadow: 0 4px 12px rgba(0, 112, 74, 0.3),
+                0 2px 6px rgba(0, 112, 74, 0.2);
+    transition: all 0.3s ease;
+    text-transform: none;
+    letter-spacing: 0.5px;
+
+    &:hover:not([disabled]) {
+      background: linear-gradient(135deg, $starbucks-green 0%, $starbucks-dark-green 100%);
+      box-shadow: 0 6px 20px rgba(0, 112, 74, 0.4),
+                  0 3px 10px rgba(0, 112, 74, 0.3);
+      transform: translateY(-2px);
+    }
+
+    &:active:not([disabled]) {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(0, 112, 74, 0.3);
+    }
+
+    mat-spinner {
+      display: inline-block;
+      margin-right: 8px;
+    }
+  }
+}
+
+// Footer Links
+.footer-links {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+
+  a {
+    color: $starbucks-green;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgba(0, 112, 74, 0.05);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 112, 74, 0.1);
+
+    &:hover {
+      background: rgba(0, 112, 74, 0.1);
+      border-color: rgba(0, 112, 74, 0.2);
+    }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+// Footer Info
+.footer-info {
+  text-align: center;
+  color: $starbucks-dark-green;
+  margin-top: auto;
+  padding: 20px;
+
+  .contact-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .copyright {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin: 0;
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .login-header {
+    .header-content {
+      flex-direction: column;
+
+      .header-text {
+        text-align: center;
+
+        h1 {
+          font-size: 1.5rem;
+        }
+      }
+    }
+  }
+
+  .cards-container {
+    padding: 0 10px;
+  }
+
+  .login-card.single-card {
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .footer-links {
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;
+
+    a {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}

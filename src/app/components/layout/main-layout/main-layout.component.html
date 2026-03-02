@@ -1,0 +1,26 @@
+<mat-sidenav-container class="layout-container">
+  <mat-sidenav
+    #drawer
+    class="layout-sidenav"
+    [mode]="sidenavMode"
+    [opened]="sidenavOpened"
+    (openedChange)="sidenavOpened = $event"
+    (backdropClick)="closeDrawer()"
+  >
+    <app-sidebar (itemSelected)="onSidebarItemSelected()"></app-sidebar>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="layout-content">
+    <mat-toolbar class="layout-toolbar" color="primary">
+      <button mat-icon-button class="menu-btn" (click)="toggleDrawer()" aria-label="Toggle menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span class="toolbar-title">School Register</span>
+      <span class="spacer"></span>
+    </mat-toolbar>
+
+    <div class="page-content">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

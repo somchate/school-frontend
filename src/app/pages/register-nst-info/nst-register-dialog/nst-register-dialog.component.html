@@ -1,0 +1,94 @@
+<div class="dialog-container">
+  <h2 mat-dialog-title>{{ dialogTitle }}</h2>
+
+  <mat-dialog-content>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>เลขประจำตัวประชาชน:</label>
+        <input type="text" class="form-control" [(ngModel)]="nst.regPid" [readonly]="!nst.isNew">
+      </div>
+
+      <div class="form-group">
+        <label>รหัส นศท.:</label>
+        <input type="text" class="form-control" [(ngModel)]="nst.nstId">
+      </div>
+
+      <div class="form-group">
+        <label>คำนำหน้า:</label>
+        <input type="text" class="form-control" [(ngModel)]="nst.regTitle">
+      </div>
+
+      <div class="form-group">
+        <label>ชื่อ:</label>
+        <input type="text" class="form-control" [(ngModel)]="nst.regFname">
+      </div>
+
+      <div class="form-group">
+        <label>นามสกุล:</label>
+        <input type="text" class="form-control" [(ngModel)]="nst.regLname">
+      </div>
+
+      <div class="form-group">
+        <label>เพศ:</label>
+        <select class="form-control" [(ngModel)]="nst.regSex">
+          <option value="M">ชาย</option>
+          <option value="F">หญิง</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>ชั้นปี:</label>
+        <select class="form-control" [(ngModel)]="nst.nstAtClass">
+          <option value="1">ชั้นปีที่ 1</option>
+          <option value="2">ชั้นปีที่ 2</option>
+          <option value="3">ชั้นปีที่ 3</option>
+          <option value="4">ชั้นปีที่ 4</option>
+          <option value="5">ชั้นปีที่ 5</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>สถานะ:</label>
+        <select class="form-control" [(ngModel)]="nst.nstStatusId">
+          <option value="A1">รายงานตัว (A1)</option>
+          <option value="A2">รายงานตัว (A2)</option>
+          <option value="A3">รายงานตัว (A3)</option>
+          <option value="A4">รายงานตัว (A4)</option>
+          <option value="A5">โอนย้าย (A5)</option>
+          <option value="A6">โอนย้าย (A6)</option>
+          <option value="A7">โอนย้าย (A7)</option>
+          <option value="A8">โอนย้าย (A8)</option>
+          <option value="02">ขึ้นทะเบียน</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>วันที่รายงานตัว:</label>
+        <mat-form-field appearance="outline" class="datepicker-field">
+          <input matInput [matDatepicker]="picker" [(ngModel)]="approveDateValue" placeholder="เลือกวันที่">
+          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <div class="form-group">
+        <label>เลขที่หนังสือ รด.25:</label>
+        <input type="text" class="form-control" [(ngModel)]="nst.nstRd25">
+      </div>
+
+      <div class="form-group full-width">
+        <label>เอกสาร/หมายเหตุ:</label>
+        <input type="text" class="form-control" [(ngModel)]="nst.nstDoc">
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button class="btn btn-secondary" (click)="onCancel()">
+      <i class="fas fa-times"></i> ยกเลิก
+    </button>
+    <button class="btn btn-success" (click)="onSave()">
+      <i class="fas fa-save"></i> บันทึก
+    </button>
+  </mat-dialog-actions>
+</div>

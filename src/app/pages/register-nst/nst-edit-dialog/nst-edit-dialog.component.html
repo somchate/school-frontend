@@ -1,0 +1,128 @@
+<h2 mat-dialog-title>ข้อมูล นศท. - {{ data.regTitle }} {{ data.regFname }} {{ data.regLname }}</h2>
+<mat-dialog-content class="edit-content">
+
+  <h3 class="section-title">ข้อมูลส่วนบุคคล</h3>
+  <div class="form-grid">
+    <mat-form-field appearance="outline">
+      <mat-label>คำนำหน้า</mat-label>
+      <input matInput [(ngModel)]="data.regTitle" readonly>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>ชื่อ</mat-label>
+      <input matInput [(ngModel)]="data.regFname" readonly>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>นามสกุล</mat-label>
+      <input matInput [(ngModel)]="data.regLname" readonly>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>เลข ปชช.</mat-label>
+      <input matInput [(ngModel)]="data.regPid" readonly>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>รหัส นศท.</mat-label>
+      <input matInput [(ngModel)]="data.nstId" readonly>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>ชั้นปีที่</mat-label>
+      <input matInput [(ngModel)]="data.nstAtClass" readonly>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>สถานะ นศท.</mat-label>
+      <mat-select [(ngModel)]="data.nstStatusId">
+        <mat-option value="">-- เลือก --</mat-option>
+        <mat-option value="01">ปกติ</mat-option>
+        <mat-option value="02">พ้นสภาพ</mat-option>
+        <mat-option value="03">ลาออก</mat-option>
+        <mat-option value="04">จำหน่าย</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>วันเดือนปีเกิด</mat-label>
+      <input matInput [(ngModel)]="data.regBirthday" readonly>
+    </mat-form-field>
+  </div>
+
+  <h3 class="section-title">สถานศึกษา</h3>
+  <div class="form-grid">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>สถานศึกษา</mat-label>
+      <input matInput [(ngModel)]="data.schoolName" readonly>
+    </mat-form-field>
+  </div>
+
+  <h3 class="section-title">ที่อยู่ตามทะเบียนบ้าน</h3>
+  <div class="form-grid">
+    <mat-form-field appearance="outline">
+      <mat-label>บ้านเลขที่</mat-label>
+      <input matInput [(ngModel)]="data.regAddr">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>หมู่ที่</mat-label>
+      <input matInput [(ngModel)]="data.regMm">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>ถนน</mat-label>
+      <input matInput [(ngModel)]="data.regThanon">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>ตรอก</mat-label>
+      <input matInput [(ngModel)]="data.regTrok">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>ซอย</mat-label>
+      <input matInput [(ngModel)]="data.regSoi">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>จังหวัด</mat-label>
+      <input matInput [(ngModel)]="data.regProvinceName" readonly>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>อำเภอ</mat-label>
+      <input matInput [(ngModel)]="data.regAmphurName" readonly>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>ตำบล</mat-label>
+      <input matInput [(ngModel)]="data.regDistricName" readonly>
+    </mat-form-field>
+  </div>
+
+  <h3 class="section-title">ข้อมูลการติดต่อ</h3>
+  <div class="form-grid">
+    <mat-form-field appearance="outline">
+      <mat-label>เบอร์โทรศัพท์</mat-label>
+      <input matInput [(ngModel)]="data.regPhone">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>E-Mail</mat-label>
+      <input matInput [(ngModel)]="data.regEmail">
+    </mat-form-field>
+  </div>
+
+  <h3 class="section-title">ข้อมูลบิดา-มารดา</h3>
+  <div class="form-grid">
+    <mat-form-field appearance="outline">
+      <mat-label>ชื่อบิดา</mat-label>
+      <input matInput [(ngModel)]="data.regFaFname">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>นามสกุลบิดา</mat-label>
+      <input matInput [(ngModel)]="data.regFaLname">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>ชื่อมารดา</mat-label>
+      <input matInput [(ngModel)]="data.regMaFname">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>นามสกุลมารดา</mat-label>
+      <input matInput [(ngModel)]="data.regMaLname">
+    </mat-form-field>
+  </div>
+
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>ยกเลิก</button>
+  <button mat-raised-button color="primary" (click)="save()">
+    <mat-icon>save</mat-icon> บันทึก
+  </button>
+</mat-dialog-actions>

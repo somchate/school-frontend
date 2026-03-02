@@ -1,0 +1,259 @@
+@use '../shared-styles.scss' as *;
+
+.subtitle {
+  margin: -12px 0 16px;
+  color: #475569;
+  font-size: 13px;
+}
+
+.section-card {
+  margin-bottom: 16px;
+
+  mat-card-header {
+    mat-icon[mat-card-avatar] {
+      background: rgba(0, 98, 65, 0.12);
+      color: #006241;
+      border-radius: 12px;
+      padding: 8px;
+      font-size: 22px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+}
+
+.hint {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.7;
+  padding: 6px 0 14px;
+}
+
+.search-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.message-card {
+  margin-bottom: 16px;
+}
+
+.message {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+
+.message.error {
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+}
+
+.message.success {
+  color: #065f46;
+  background: #ecfdf5;
+  border: 1px solid #d1fae5;
+}
+
+.message.warning {
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fef3c7;
+}
+
+.transfer-text {
+  margin-top: 10px;
+  color: #334155;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 28px 0;
+}
+
+.loading-text {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.person-form {
+  margin-top: 16px;
+}
+
+ .person-header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+ }
+
+ .person-header-left {
+  flex: 1;
+  min-width: 0;
+ }
+
+ .person-photo {
+  width: 160px;
+  flex: 0 0 160px;
+  display: flex;
+  justify-content: flex-end;
+ }
+
+ .person-photo img {
+  width: 160px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid #e7ece9;
+  background: #f8faf9;
+ }
+
+ .person-photo-placeholder {
+  width: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+ }
+
+ .person-photo-empty {
+  width: 160px;
+  height: 200px;
+  border-radius: 12px;
+  border: 1px dashed #cbd5e1;
+  background: #f8fafc;
+ }
+
+.form-note {
+  text-align: right;
+  margin: 0 0 10px;
+  font-size: 12px;
+}
+
+.req {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.note {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.form-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  td {
+    padding: 6px 8px;
+    font-size: 13px;
+    vertical-align: middle;
+  }
+}
+
+.td-head {
+  background-color: #f1f6f3;
+  color: #006241;
+  font-weight: 800;
+  padding: 10px 10px !important;
+  font-size: 13px !important;
+  border-radius: 10px;
+}
+
+.td-label {
+  width: 160px;
+  white-space: nowrap;
+  font-weight: 600;
+  color: #475569;
+  background-color: #f8faf9;
+  text-align: right;
+  padding-right: 10px !important;
+}
+
+.td-value {
+  background-color: #ffffff;
+}
+
+.text-readonly {
+  background-color: #f8faf9;
+  border: 1px solid #e7ece9;
+  color: #334155;
+  border-radius: 6px;
+}
+
+mat-form-field.inline {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 4px 6px 4px 0;
+  width: 220px;
+}
+
+mat-form-field.inline.tiny {
+  width: 90px;
+}
+
+mat-form-field.inline.small {
+  width: 140px;
+}
+
+mat-form-field.inline.wide {
+  width: min(520px, 100%);
+}
+
+.cancel-button {
+  border-width: 2px;
+  font-weight: 600;
+  min-width: 120px;
+}
+
+.cancel-button:hover {
+  filter: brightness(0.96);
+}
+
+.cancel-button:focus-visible {
+  outline: 3px solid rgba(211, 47, 47, 0.35);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .person-header {
+    grid-template-columns: 1fr;
+  }
+
+  .person-photo {
+    width: 100%;
+    flex: 0 0 auto;
+    justify-content: flex-start;
+  }
+
+  .td-label {
+    width: auto;
+    white-space: normal;
+  }
+
+  .form-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  mat-form-field.inline,
+  mat-form-field.inline.small,
+  mat-form-field.inline.wide {
+    width: min(100%, 520px);
+  }
+
+  .search-actions {
+    justify-content: flex-start;
+  }
+}

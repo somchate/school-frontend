@@ -1,0 +1,412 @@
+<div class="page-container">
+  <div class="page-title">
+    <mat-icon>person_add</mat-icon>
+    <span>ข้อมูลผู้สมัคร</span>
+  </div>
+
+  <div class="subtitle" *ngIf="schoolName">ชื่อสถานศึกษาวิชาทหาร : {{ schoolName }}</div>
+
+  <!-- ค้นหาข้อมูลผู้สมัคร (จาก register_student.jsp) -->
+  <mat-card class="section-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>search</mat-icon>
+      <mat-card-title>ค้นหาข้อมูลผู้สมัคร</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="hint">
+        กรุณากรอกเลขประจำตัวประชาชนของผู้สมัคร นศท. แล้วค้นหา ระบบจะค้นหาข้อมูลออนไลน์จากกรมการปกครอง แล้วแสดงข้อมูล
+        <br />
+        สามารถเข้าใช้งานบริการข้อมูลออนไลน์ของกรมการปกครองได้ตลอดเวลา (24/7 service)
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="fill">
+          <mat-label>เลขประจำตัวประชาชน</mat-label>
+          <input matInput type="text" [(ngModel)]="searchPid" maxlength="13" placeholder="เลขอารบิก" (keypress)="onPidKeyPress($event)" />
+        </mat-form-field>
+
+        <div class="search-actions">
+          <button mat-flat-button color="primary" (click)="searchByPid('linkage')" [disabled]="isSearching">
+            <mat-icon *ngIf="!isSearching">search</mat-icon>
+            <mat-spinner *ngIf="isSearching" diameter="18"></mat-spinner>
+            สิทธิตนเอง (Linkage)
+          </button>
+          <button mat-stroked-button disabled>
+            <mat-icon>search</mat-icon>
+            สิทธิ User กลาง
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- ข้อความแจ้งผลค้นหา -->
+  <mat-card class="message-card" *ngIf="searchMessage">
+    <mat-card-content>
+      <div class="message"
+           [class.error]="searchMessageType === 'error'"
+           [class.success]="searchMessageType === 'success'"
+           [class.warning]="searchMessageType === 'warning'">
+        {{ searchMessage }}
+      </div>
+
+      <div *ngIf="showTransferConfirm" class="transfer-confirm">
+        <div class="transfer-text">ท่านต้องการย้ายข้อมูลผู้สมัครฯ มายังสถานศึกษาวิชาทหารของท่านหรือไม่?</div>
+        <div class="action-row">
+          <button mat-flat-button color="primary" (click)="confirmTransfer()">ใช่</button>
+          <button mat-button (click)="cancelTransfer()">ไม่ใช่</button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- กำลังค้นหา -->
+  <div class="loading" *ngIf="isSearching">
+    <mat-spinner diameter="40"></mat-spinner>
+    <div class="loading-text">กำลังดำเนินการ กรุณาคอย...</div>
+  </div>
+
+  <!-- ฟอร์มข้อมูลผู้สมัคร (จาก _person_data.jsp) -->
+  <div class="person-form" *ngIf="showForm && personData">
+    <div class="form-note"><span class="req">*</span> <span class="note">จำเป็นต้องกรอกข้อมูล</span></div>
+
+    <!-- ประวัติส่วนตัว -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>badge</mat-icon>
+        <mat-card-title>ประวัติส่วนตัว</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="person-header">
+          <div class="person-header-left">
+            <table class="form-table">
+      <tr>
+        <td class="td-label">ชื่อ :</td>
+        <td class="td-value">
+          <mat-form-field appearance="fill" class="inline small">
+            <mat-label>คำนำหน้า</mat-label>
+            <input matInput type="text" [value]="personData.titleDesc" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>ชื่อ</mat-label>
+            <input matInput type="text" [value]="personData.fname" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>นามสกุล</mat-label>
+            <input matInput type="text" [value]="personData.lname" readonly>
+          </mat-form-field>
+        </td>
+      </tr>
+      <tr>
+        <td class="td-label">เลขประจำตัวประชาชน :</td>
+        <td class="td-value">
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>เลขประจำตัวประชาชน</mat-label>
+            <input matInput type="text" [value]="personData.pid" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline small">
+            <mat-label>วันเดือนปีเกิด</mat-label>
+            <input matInput type="text" [value]="personData.birthday" readonly>
+          </mat-form-field>
+          <span class="note">อายุ {{ getAgeDisplay() }}</span>
+        </td>
+      </tr>
+      <tr>
+        <td class="td-label">เพศ :</td>
+        <td class="td-value">
+          <mat-form-field appearance="fill" class="inline small">
+            <mat-label>เพศ</mat-label>
+            <input matInput type="text" [value]="getSexDisplay()" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline small">
+            <mat-label>สัญชาติ</mat-label>
+            <input matInput type="text" [value]="personData.natDesc" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>เชื้อชาติ</mat-label>
+            <mat-select [(ngModel)]="form.nationId">
+              <mat-option value="">-- เลือก --</mat-option>
+              <mat-option *ngFor="let nat of natList" [value]="nat.id">{{ nat.desc }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>ศาสนา</mat-label>
+            <mat-select [(ngModel)]="form.relegId">
+              <mat-option value="">-- เลือก --</mat-option>
+              <mat-option *ngFor="let rel of relegList" [value]="rel.id">{{ rel.desc }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </td>
+      </tr>
+      <tr>
+        <td class="td-label">จบจากสถานศึกษา :</td>
+        <td class="td-value">
+          <mat-form-field appearance="fill" class="inline wide">
+            <mat-label>จบจากสถานศึกษา</mat-label>
+            <input matInput type="text" [(ngModel)]="form.endSchool" />
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>จังหวัด</mat-label>
+            <mat-select [(ngModel)]="form.endSchoolProvCid">
+              <mat-option value="">-- เลือก --</mat-option>
+              <mat-option *ngFor="let prov of provinceList" [value]="prov.id">{{ prov.desc }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </td>
+      </tr>
+      <tr>
+        <td class="td-label"><span class="req">เกรดเฉลี่ย *</span> :</td>
+        <td class="td-value">
+          <mat-form-field appearance="fill" class="inline small">
+            <mat-label>เกรดเฉลี่ย</mat-label>
+            <input matInput type="text" [(ngModel)]="form.grade" maxlength="4" />
+          </mat-form-field>
+          <span class="note">(เลขอารบิก 0.00 - 4.00)</span>
+        </td>
+      </tr>
+      <tr>
+        <td class="td-label">เบอร์โทรศัพท์ :</td>
+        <td class="td-value">
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>เบอร์โทรศัพท์</mat-label>
+            <input matInput type="text" [(ngModel)]="form.telPerson" />
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>เบอร์โทรศัพท์ (ผู้ปกครอง)</mat-label>
+            <input matInput type="text" [(ngModel)]="form.telParents" />
+          </mat-form-field>
+        </td>
+      </tr>
+            </table>
+          </div>
+
+          <div class="person-photo">
+            <ng-container *ngIf="personData.photoBase64; else noPhoto">
+              <img
+                [src]="(personData.photoMimeType || 'data:image/jpeg;base64') + ',' + personData.photoBase64"
+                alt="รูปถ่าย"
+              />
+            </ng-container>
+            <ng-template #noPhoto>
+              <div class="person-photo-placeholder">
+                <div class="person-photo-empty"></div>
+                <button mat-stroked-button color="primary" (click)="fetchPhotoFromLinkage2()" [disabled]="isFetchingPhoto">
+                  <mat-spinner *ngIf="isFetchingPhoto" diameter="18"></mat-spinner>
+                  <span *ngIf="!isFetchingPhoto">ดึงรูปจาก Linkage2</span>
+                </button>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- ที่อยู่ตามทะเบียนบ้าน -->
+    <table class="form-table">
+      <tr><td colspan="2" class="td-head">&nbsp;ที่อยู่ตามทะเบียนบ้าน</td></tr>
+      <tr>
+        <td class="td-label">&nbsp;</td>
+        <td class="td-value">
+          <mat-form-field appearance="fill" class="inline tiny">
+            <mat-label>บ้านเลขที่</mat-label>
+            <input matInput type="text" [value]="personData.addrNo" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline tiny">
+            <mat-label>หมู่ที่</mat-label>
+            <input matInput type="text" [value]="personData.addrMoo" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>ถนน</mat-label>
+            <input matInput type="text" [value]="personData.roadName" readonly>
+          </mat-form-field>
+        </td>
+      </tr>
+      <tr>
+        <td class="td-label">&nbsp;</td>
+        <td class="td-value">
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>ตรอก</mat-label>
+            <input matInput type="text" [value]="personData.trokName" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>ซอย</mat-label>
+            <input matInput type="text" [value]="personData.soiName" readonly>
+          </mat-form-field>
+        </td>
+      </tr>
+      <tr>
+        <td class="td-label">&nbsp;</td>
+        <td class="td-value">
+          <mat-form-field appearance="fill" class="inline small">
+            <mat-label>ตำบล</mat-label>
+            <input matInput type="text" [value]="personData.districtName" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline small">
+            <mat-label>อำเภอ</mat-label>
+            <input matInput type="text" [value]="personData.amphurName" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline small">
+            <mat-label>จังหวัด</mat-label>
+            <input matInput type="text" [value]="personData.provinceName" readonly>
+          </mat-form-field>
+        </td>
+      </tr>
+    </table>
+
+    <!-- ภูมิลำเนาทหาร -->
+    <table class="form-table">
+      <tr><td colspan="2" class="td-head">&nbsp;ภูมิลำเนาทหาร</td></tr>
+      <tr>
+        <td class="td-label">&nbsp;</td>
+        <td class="td-value">
+          <mat-form-field appearance="fill" class="inline tiny">
+            <mat-label>เลขที่</mat-label>
+            <input matInput type="text" [value]="personData.existingData?.armyAddr || ''" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline tiny">
+            <mat-label>หมู่ที่</mat-label>
+            <input matInput type="text" [value]="personData.existingData?.armyMoo || ''" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>ถนน</mat-label>
+            <input matInput type="text" [value]="personData.existingData?.armyRoad || ''" readonly>
+          </mat-form-field>
+        </td>
+      </tr>
+      <tr>
+        <td class="td-label">&nbsp;</td>
+        <td class="td-value">
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>ตรอก</mat-label>
+            <input matInput type="text" [value]="personData.existingData?.armyTrok || ''" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>ซอย</mat-label>
+            <input matInput type="text" [value]="personData.existingData?.armySoi || ''" readonly>
+          </mat-form-field>
+        </td>
+      </tr>
+      <tr>
+        <td class="td-label">&nbsp;</td>
+        <td class="td-value">
+          <mat-form-field appearance="fill" class="inline small">
+            <mat-label>ตำบล</mat-label>
+            <input matInput type="text" [value]="personData.existingData?.armyDistrict || ''" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline small">
+            <mat-label>อำเภอ</mat-label>
+            <input matInput type="text" [value]="personData.existingData?.armyAmphur || ''" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline small">
+            <mat-label>จังหวัด</mat-label>
+            <input matInput type="text" [value]="personData.existingData?.armyProvince || ''" readonly>
+          </mat-form-field>
+        </td>
+      </tr>
+      <tr>
+        <td class="td-label">หมายเหตุ :</td>
+        <td class="td-value">
+          <mat-form-field appearance="fill" class="inline wide">
+            <mat-label>หมายเหตุ</mat-label>
+            <input matInput type="text" [(ngModel)]="form.armyNote" />
+          </mat-form-field>
+        </td>
+      </tr>
+    </table>
+
+    <!-- ภูมิหลังทางเศรษฐกิจและสังคม -->
+    <table class="form-table">
+      <tr><td colspan="2" class="td-head">&nbsp;ภูมิหลังทางเศรษฐกิจและสังคม</td></tr>
+      <tr>
+        <td class="td-label">ชื่อบิดา :</td>
+        <td class="td-value">
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>ชื่อบิดา</mat-label>
+            <input matInput type="text" [value]="personData.fatherName" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>นามสกุล</mat-label>
+            <input matInput type="text" [(ngModel)]="form.fatherLname" />
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>อาชีพ</mat-label>
+            <mat-select [(ngModel)]="form.fatherJobId">
+              <mat-option value="">-- เลือก --</mat-option>
+              <mat-option *ngFor="let emp of employmentList" [value]="emp.id">{{ emp.desc }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </td>
+      </tr>
+      <tr>
+        <td class="td-label">ชื่อมารดา :</td>
+        <td class="td-value">
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>ชื่อมารดา</mat-label>
+            <input matInput type="text" [value]="personData.motherName" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>นามสกุล</mat-label>
+            <input matInput type="text" [(ngModel)]="form.motherLname" />
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>อาชีพ</mat-label>
+            <mat-select [(ngModel)]="form.motherJobId">
+              <mat-option value="">-- เลือก --</mat-option>
+              <mat-option *ngFor="let emp of employmentList" [value]="emp.id">{{ emp.desc }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </td>
+      </tr>
+      <tr>
+        <td class="td-label">สถานะบิดา - มารดา :</td>
+        <td class="td-value">
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>สถานะบิดา - มารดา</mat-label>
+            <mat-select [(ngModel)]="form.faMaStatusId">
+              <mat-option value="">-- เลือก --</mat-option>
+              <mat-option value="1">อยู่ด้วยกัน</mat-option>
+              <mat-option value="2">หย่าร้าง</mat-option>
+              <mat-option value="3">บิดาเสียชีวิต</mat-option>
+              <mat-option value="4">มารดาเสียชีวิต</mat-option>
+              <mat-option value="5">เสียชีวิต</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </td>
+      </tr>
+      <tr>
+        <td class="td-label"><span class="req">ฐานะครอบครัว *</span> :</td>
+        <td class="td-value">
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>ฐานะครอบครัว</mat-label>
+            <mat-select [(ngModel)]="form.familyWealthId">
+              <mat-option value="">-- เลือก --</mat-option>
+              <mat-option value="1">รวย</mat-option>
+              <mat-option value="2">ปานกลาง</mat-option>
+              <mat-option value="3">ยากจน</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="inline">
+            <mat-label>สภาพครอบครัว</mat-label>
+            <mat-select [(ngModel)]="form.familyStatusId">
+              <mat-option value="">-- เลือก --</mat-option>
+              <mat-option value="1">อบอุ่น</mat-option>
+              <mat-option value="2">ขาดการดูแล</mat-option>
+              <mat-option value="3">ถูกทอดทิ้ง</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </td>
+      </tr>
+      <tr>
+        <td class="td-label">&nbsp;</td>
+        <td class="td-value">
+          <button mat-flat-button color="primary" (click)="saveForm()" [disabled]="isSaving">
+            <mat-icon>save</mat-icon>
+            {{ isSaving ? 'กำลังบันทึก...' : 'บันทึก' }}
+          </button>
+          &nbsp;
+          <button mat-stroked-button color="warn" class="cancel-button" (click)="resetPage()">ยกเลิก</button>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>

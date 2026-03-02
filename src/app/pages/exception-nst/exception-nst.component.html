@@ -1,0 +1,88 @@
+<div class="page-container">
+  <div class="page-title">
+    <mat-icon>shield</mat-icon>
+    <span>ขอยกเว้นการตรวจเลือกฯ</span>
+  </div>
+
+  <div class="subtitle" *ngIf="schoolName">ชื่อสถานศึกษาวิชาทหาร : {{ schoolName }}</div>
+
+  <mat-card class="section-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>search</mat-icon>
+      <mat-card-title>ค้นหาข้อมูล</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="form-row">
+        <mat-form-field appearance="fill">
+          <mat-label>ปีการศึกษา</mat-label>
+          <input
+            matInput
+            type="text"
+            [(ngModel)]="searchYear"
+            maxlength="4"
+            (keypress)="$event.charCode >= 48 && $event.charCode <= 57 || $event.charCode === 13"
+            (keyup.enter)="search()"
+          />
+        </mat-form-field>
+
+        <div class="search-actions">
+          <button mat-flat-button color="primary" (click)="search()" [disabled]="isLoading">
+            <mat-icon *ngIf="!isLoading">search</mat-icon>
+            <mat-spinner *ngIf="isLoading" diameter="18"></mat-spinner>
+            ค้นหา
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="section-card" *ngIf="hasSearched">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>list</mat-icon>
+      <mat-card-title>ผลการค้นหา</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngIf="isLoading" class="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <div class="loading-text">กำลังโหลดข้อมูล...</div>
+      </div>
+
+      <div class="table-container" *ngIf="!isLoading && exceptionList.length > 0">
+        <table mat-table [dataSource]="exceptionList" class="mat-table-compact">
+          <ng-container matColumnDef="idx">
+            <th mat-header-cell *matHeaderCellDef>ลำดับ</th>
+            <td mat-cell *matCellDef="let row; let i = index">{{ i + 1 }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="nstId">
+            <th mat-header-cell *matHeaderCellDef>รหัสนศท.</th>
+            <td mat-cell *matCellDef="let row">{{ row.nstId }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="fname">
+            <th mat-header-cell *matHeaderCellDef>ชื่อ</th>
+            <td mat-cell *matCellDef="let row">{{ row.regFname }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="lname">
+            <th mat-header-cell *matHeaderCellDef>นามสกุล</th>
+            <td mat-cell *matCellDef="let row">{{ row.regLname }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="class">
+            <th mat-header-cell *matHeaderCellDef>ชั้นปี</th>
+            <td mat-cell *matCellDef="let row">{{ row.nstAtClass }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
+
+      <div class="empty-state" *ngIf="!isLoading && exceptionList.length === 0">
+        <mat-icon>info</mat-icon>
+        <div>ไม่พบข้อมูลที่ท่านต้องการค้นหา !!!</div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

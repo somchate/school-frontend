@@ -1,0 +1,329 @@
+@use '../shared-styles.scss' as *;
+
+.subtitle {
+  margin: -12px 0 16px;
+  color: #475569;
+  font-size: 13px;
+}
+
+.section-card {
+  margin-bottom: 16px;
+
+  mat-card-header {
+    mat-icon[mat-card-avatar] {
+      background: rgba(0, 98, 65, 0.12);
+      color: #006241;
+      border-radius: 12px;
+      padding: 8px;
+      font-size: 22px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+}
+
+.print-row {
+  display: flex;
+  justify-content: center;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 28px 0;
+}
+
+.loading-text {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.ff-small {
+  width: 140px;
+}
+
+.ff-wide {
+  width: min(520px, 100%);
+}
+
+.search-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.chev {
+  color: #64748b;
+}
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 8px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0, 98, 65, 0.08);
+  color: #006241;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.divider {
+  margin: 12px 0;
+}
+
+.kv-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.kv {
+  padding: 10px;
+  border: 1px solid #e7ece9;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.k {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.v {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.doc-field {
+  width: 100%;
+}
+
+// 2-list layout (จาก register_nst_info.jsp)
+.two-list-layout {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  align-items: stretch;
+}
+
+.left-column {
+  flex: 1;
+  min-width: 330px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.center-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-top: 0;
+  gap: 16px;
+  min-width: 56px;
+}
+
+.right-column {
+  flex: 1;
+  min-width: 330px;
+}
+
+
+.arrow-btn {
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.10);
+}
+
+.action-buttons-vertical {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0;
+}
+
+// NST list panel
+.nst-list-panel {
+  border: 1px solid #e7ece9;
+  border-radius: 12px;
+  background: #fff;
+}
+
+
+.list-header {
+  padding: 10px 12px;
+  font-size: 13px;
+  border-bottom: 1px solid #e7ece9;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+
+  mat-icon {
+    color: #64748b;
+  }
+}
+
+.count {
+  margin-left: auto;
+  color: #64748b;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  margin-left: 6px;
+}
+
+.badge.red {
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+}
+
+.badge.green {
+  color: #065f46;
+  background: #ecfdf5;
+  border: 1px solid #d1fae5;
+}
+
+.nreq-header {
+  background-color: #fff;
+}
+
+.req-header {
+  background-color: #fff;
+}
+
+.list-hint {
+  padding: 2px 12px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.table-scroll {
+  max-height: 500px;
+  overflow: auto;
+  border-top: 1px solid #e7ece9;
+}
+
+.mat-table-compact {
+  width: 100%;
+
+  th {
+    font-size: 12px;
+    font-weight: 800;
+    color: #334155;
+    background: #f8fafc;
+  }
+
+  td {
+    font-size: 12px;
+    color: #0f172a;
+  }
+}
+
+.row-click {
+  cursor: pointer;
+
+  &:hover {
+    filter: brightness(0.97);
+  }
+
+  &.selected {
+    outline: 2px solid rgba(0, 98, 65, 0.22);
+    outline-offset: -2px;
+  }
+}
+
+.nst-select-list {
+  height: 500px;
+  overflow-y: auto;
+  border-top: 1px solid #eee;
+}
+
+.list-item {
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f5f5f5;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:hover {
+    filter: brightness(0.95);
+  }
+
+  &.selected {
+    background-color: #b3d9ff !important;
+  }
+}
+
+.list-empty {
+  padding: 20px;
+  text-align: center;
+  color: #999;
+  font-size: 13px;
+}
+
+// Transfer section
+
+.transfer-card {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
+  .two-list-layout {
+    flex-direction: column;
+  }
+
+  .center-column {
+    flex-direction: row;
+    padding-top: 0;
+    padding: 8px 0;
+  }
+
+  .left-column,
+  .right-column {
+    min-width: 100%;
+  }
+
+  .kv-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ff-wide,
+  .ff-small {
+    width: min(520px, 100%);
+  }
+}

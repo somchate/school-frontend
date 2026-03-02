@@ -1,0 +1,157 @@
+<div class="page-container">
+  <div class="page-title">
+    <mat-icon>hourglass_bottom</mat-icon>
+    <span>ขอรอรับสิทธิ</span>
+  </div>
+
+  <div class="subtitle" *ngIf="schoolName">ชื่อสถานศึกษาวิชาทหาร : {{ schoolName }}</div>
+
+  <!-- ค้นหา + ตาราง (จาก nst_waiting_rights.jsp) -->
+  <ng-container *ngIf="!showProcessForm">
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>search</mat-icon>
+        <mat-card-title>ค้นหาข้อมูล</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="form-row">
+          <mat-form-field appearance="fill">
+            <mat-label>เลขประจำตัวประชาชน</mat-label>
+            <input matInput type="text" [(ngModel)]="searchPid" maxlength="13"
+                   (keypress)="$event.charCode >= 48 && $event.charCode <= 57 || $event.charCode === 13"
+                   (keydown.enter)="search()" />
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>ชื่อ</mat-label>
+            <input matInput type="text" [(ngModel)]="searchFname" (keydown.enter)="search()" />
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>นามสกุล</mat-label>
+            <input matInput type="text" [(ngModel)]="searchLname" (keydown.enter)="search()" />
+          </mat-form-field>
+
+          <div class="search-actions">
+            <button mat-flat-button color="primary" (click)="search()">
+              <mat-icon>search</mat-icon>
+              ค้นหา
+            </button>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="section-card" *ngIf="hasSearched">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>list</mat-icon>
+        <mat-card-title>ผลการค้นหา</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="isLoading" class="loading">
+          <mat-spinner diameter="40"></mat-spinner>
+          <div class="loading-text">กำลังโหลดข้อมูล...</div>
+        </div>
+
+        <div class="table-container" *ngIf="!isLoading && waitingList.length > 0">
+          <table mat-table [dataSource]="waitingList" class="mat-table-compact">
+            <ng-container matColumnDef="idx">
+              <th mat-header-cell *matHeaderCellDef>ลำดับ</th>
+              <td mat-cell *matCellDef="let row; let i = index">{{ i + 1 }}</td>
+            </ng-container>
+            <ng-container matColumnDef="nstId">
+              <th mat-header-cell *matHeaderCellDef>รหัส นศท.</th>
+              <td mat-cell *matCellDef="let row">
+                <a *ngIf="row.canProcess" class="link" (click)="openProcess(row)">{{ row.nstId }}</a>
+                <span *ngIf="!row.canProcess">{{ row.nstId }}</span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>ชื่อ - นามสกุล</th>
+              <td mat-cell *matCellDef="let row">{{ getFullName(row) }}</td>
+            </ng-container>
+            <ng-container matColumnDef="class">
+              <th mat-header-cell *matHeaderCellDef>ชั้นปี</th>
+              <td mat-cell *matCellDef="let row">{{ row.nstAtClass }}</td>
+            </ng-container>
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>สถานะ</th>
+              <td mat-cell *matCellDef="let row">
+                <span [class.status-bold]="isStatusBold(row)">{{ row.statusDesc }}</span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="year">
+              <th mat-header-cell *matHeaderCellDef>ปี พ.ศ.</th>
+              <td mat-cell *matCellDef="let row">{{ row.statusDesc === '-' ? '-' : row.atYear }}</td>
+            </ng-container>
+            <ng-container matColumnDef="cancel">
+              <th mat-header-cell *matHeaderCellDef>ยกเลิก</th>
+              <td mat-cell *matCellDef="let row">
+                <button mat-button color="warn" *ngIf="row.canCancel" (click)="confirmCancel(row)">ยกเลิก</button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="['idx','nstId','name','class','status','year','cancel']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['idx','nstId','name','class','status','year','cancel'];"></tr>
+          </table>
+        </div>
+
+        <div *ngIf="!isLoading && waitingList.length === 0" class="empty-state">
+          <mat-icon>info</mat-icon>
+          <div>ไม่พบข้อมูลที่ต้องการค้นหา !!!</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+
+  <!-- ฟอร์มขอรอรับสิทธิ (จาก nst_waiting_rights_process.jsp) -->
+  <mat-card class="section-card" *ngIf="showProcessForm">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>edit</mat-icon>
+      <mat-card-title>การขอรอรับสิทธิ</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngIf="isLoadingProcess" class="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <div class="loading-text">กำลังโหลดข้อมูล...</div>
+      </div>
+
+      <div *ngIf="!isLoadingProcess && processData">
+        <div class="kv-grid">
+          <div class="kv"><div class="k">รหัส นศท.</div><div class="v">{{ processData.nstId }}</div></div>
+          <div class="kv"><div class="k">ชื่อ - สกุล</div><div class="v">{{ processData.name }}</div></div>
+        </div>
+
+        <mat-checkbox [(ngModel)]="processWaiting">ขอรอรับสิทธิ</mat-checkbox>
+
+        <div class="form-row" style="margin-top: 12px">
+          <mat-form-field appearance="fill">
+            <mat-label>เหตุผล</mat-label>
+            <mat-select [(ngModel)]="processRemark">
+              <mat-option value="">-- เลือก --</mat-option>
+              <mat-option *ngFor="let r of remarkOptions" [value]="r">{{ r }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>อื่นๆ ระบุ</mat-label>
+            <input matInput type="text" [(ngModel)]="processNote" />
+          </mat-form-field>
+        </div>
+
+        <div class="message error" *ngIf="processErrorText">{{ processErrorText }}</div>
+
+        <div class="action-row">
+          <button mat-flat-button color="primary" (click)="saveProcess()" *ngIf="!processErrorText">
+            <mat-icon>save</mat-icon>
+            บันทึก
+          </button>
+          <button mat-button (click)="goBackToList()">
+            <mat-icon>arrow_back</mat-icon>
+            กลับ
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

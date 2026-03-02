@@ -1,0 +1,41 @@
+<div class="sidebar">
+  <div class="sidebar-header">
+    <img src="assets/images/tdc.png" alt="TDC Logo" class="logo" />
+    <div class="title">ระบบงานทะเบียนพล นศท.</div>
+    <div class="subtitle">หน่วยบัญชาการรักษาดินแดน</div>
+    <div class="school-line" *ngIf="schoolId">
+      <span class="label">รหัส:</span>
+      <span class="value">{{ schoolId }}</span>
+    </div>
+    <div class="school-line">
+      <span class="label">ชื่อ:</span>
+      <span class="value">{{ schoolName || '-' }}</span>
+    </div>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="menu-scroll">
+    <ng-container *ngFor="let section of menuItems">
+      <div class="section-title">{{ section.label }}</div>
+      <mat-nav-list>
+        <a mat-list-item
+           *ngFor="let item of section.children"
+           [class.hidden]="!hasAccess(item)"
+           [class.active]="isActive(item.route)"
+           (click)="navigate(item.route)">
+          <mat-icon matListItemIcon>chevron_right</mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+        </a>
+      </mat-nav-list>
+    </ng-container>
+  </div>
+
+  <div class="sidebar-footer">
+    <mat-divider></mat-divider>
+    <div class="year-display">
+      <div class="year-label">ปีการศึกษา</div>
+      <div class="year">{{ currentYear }}</div>
+    </div>
+  </div>
+</div>
