@@ -170,6 +170,7 @@ export interface NstDetailData {
   regBirthday: string;
   nstAtClass: string;
   regYear: string;
+  atYear: string;
   nstStatusId: string;
   regNat: string;
   regNation: string;

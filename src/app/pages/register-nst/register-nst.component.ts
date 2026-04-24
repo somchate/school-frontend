@@ -44,6 +44,9 @@ export class RegisterNstComponent implements OnInit {
   nstData: NstDetailData | null = null;
   showForm: boolean = false;
 
+  /** ชื่อย่อสถานศึกษาวิชาทหารของ นศท. (map จาก mia_nst_register.REG_SCHOOL_ID -> mia_school.SCHOOL_ID) */
+  nstSchoolShortName: string = '';
+
   /** สำหรับแปลงรหัสสถานะ นศท. เป็นชื่อ (แสดงแบบ readonly) */
   nstStatusList: LookupItem[] = [];
 
@@ -119,6 +122,7 @@ export class RegisterNstComponent implements OnInit {
     this.searchResult = '';
     this.showForm = false;
     this.nstData = null;
+    this.nstSchoolShortName = '';
 
     this.nstService.searchNstDetail(pid, nstId).subscribe({
       next: (data) => {
@@ -127,6 +131,17 @@ export class RegisterNstComponent implements OnInit {
           this.nstData = data;
           this.showForm = true;
           this.searchResult = 'found';
+
+          // map REG_SCHOOL_ID -> mia_school.SCHOOL_ID แล้วใช้ SCHOOL_SHORTNAME
+          const regSchoolId = (data.schoolId || '').trim();
+          if (regSchoolId) {
+            this.schoolInfoService.getSchoolInfo(regSchoolId).subscribe({
+              next: (info) => {
+                this.nstSchoolShortName = info?.schoolShortName || info?.schoolName || regSchoolId;
+              },
+              error: () => { this.nstSchoolShortName = regSchoolId; }
+            });
+          }
         } else {
           this.searchResult = 'notfound';
         }
@@ -144,6 +159,7 @@ export class RegisterNstComponent implements OnInit {
     this.showForm = false;
     this.nstData = null;
     this.searchResult = '';
+    this.nstSchoolShortName = '';
   }
 
   getSexDisplay(): string {
