@@ -1,170 +1,150 @@
-<div class="login-wrapper">
-  <!-- Header -->
-  <div class="login-header">
-    <div class="header-content">
-      <img src="assets/images/tdc.png" width="80" alt="TDC Logo" class="logo">
+<div class="login-page">
+  <div class="login-card">
+    <!-- Header -->
+    <div class="login-card-header">
+      <img src="tdc.png" alt="TDC Logo" class="header-logo">
       <div class="header-text">
         <h1>ระบบงานทะเบียนพล นศท.</h1>
         <p class="subtitle">หน่วยบัญชาการรักษาดินแดน (ส่วนงานสถานศึกษาวิชาทหาร)</p>
       </div>
     </div>
-  </div>
 
-  <!-- Error Message -->
-  <div class="error-container" *ngIf="errorMessage">
-    <mat-card class="error-card">
-      <mat-icon>error</mat-icon>
-      <span>{{ errorMessage }}</span>
-    </mat-card>
-  </div>
+    <!-- Body -->
+    <div class="login-card-body">
+      <!-- Digital ID section -->
+      <div class="login-method-helper">ยืนยันตัวตนด้วย Digital ID สำหรับผู้ใช้งานสถานศึกษาวิชาทหาร</div>
+      <button
+        type="button"
+        class="btn btn-primary btn-block"
+        [disabled]="loading"
+        (click)="goToThaiDLogin()">
+        <mat-icon>smartphone</mat-icon>
+        <span>เข้าสู่ระบบด้วย ThaiD</span>
+      </button>
 
-  <!-- Single Login Card -->
-  <div class="cards-container">
-    <mat-card class="login-card single-card">
-      <!-- Login by PID (Default) -->
-      <div *ngIf="!showSchoolLogin">
-        <mat-card-header>
-          <div class="card-icon">
-            <mat-icon>person</mat-icon>
-          </div>
-          <mat-card-title>เข้าสู่ระบบ</mat-card-title>
-          <mat-card-subtitle>ด้วยเลขประจำตัวประชาชน</mat-card-subtitle>
-        </mat-card-header>
-        
-        <mat-card-content>
-          <form (ngSubmit)="loginByPID()" class="login-form">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>เลขประจำตัวประชาชน</mat-label>
-              <input 
-                matInput 
-                type="text" 
-                [(ngModel)]="upid" 
-                name="upid"
-                maxlength="13"
-                [disabled]="loading"
-                required>
-              <mat-icon matPrefix>badge</mat-icon>
-              <mat-hint>13 หลัก</mat-hint>
-            </mat-form-field>
-            
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>รหัสผ่าน</mat-label>
-              <input 
-                matInput 
-                type="password" 
-                [(ngModel)]="passwordPid" 
-                name="passwordPid"
-                [disabled]="loading"
-                required>
-              <mat-icon matPrefix>lock</mat-icon>
-            </mat-form-field>
-            
-            <button 
-              mat-raised-button 
-              color="primary" 
-              type="submit" 
-              class="full-width login-button"
-              [disabled]="loading">
-              <mat-icon *ngIf="!loading">login</mat-icon>
-              <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
-              <span>{{ loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ' }}</span>
-            </button>
-          </form>
-        </mat-card-content>
-        
-        <mat-card-footer>
-          <div class="footer-content">
-            <p><mat-icon>info</mat-icon> สำหรับผู้ใช้งานระบบ</p>
-            <span 
-              class="footer-toggle-text" 
-              (click)="toggleLoginType()">
-              <mat-icon>school</mat-icon>
-              ใช้รหัสสถานศึกษา
-            </span>
-          </div>
-        </mat-card-footer>
+      <div class="divider"><span>หรือ</span></div>
+
+      <!-- Password login -->
+      <div class="login-method-helper center">
+        หรือเข้าสู่ระบบด้วย{{ showSchoolLogin ? 'รหัสสถานศึกษาวิชาทหาร' : 'เลขประจำตัวประชาชน' }}
       </div>
 
-      <!-- Login by School ID (Toggle) -->
-      <div *ngIf="showSchoolLogin">
-        <mat-card-header>
-          <div class="card-icon">
-            <mat-icon>school</mat-icon>
-          </div>
-          <mat-card-title>เข้าสู่ระบบ</mat-card-title>
-          <mat-card-subtitle>ด้วยรหัสสถานศึกษาวิชาทหาร</mat-card-subtitle>
-        </mat-card-header>
-        
-        <mat-card-content>
-          <form (ngSubmit)="loginBySchoolId()" class="login-form">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>รหัสสถานศึกษาวิชาทหาร</mat-label>
-              <input 
-                matInput 
-                type="text" 
-                [(ngModel)]="schoolId" 
-                name="schoolId"
-                [disabled]="loading"
-                required>
-              <mat-icon matPrefix>business</mat-icon>
-            </mat-form-field>
-            
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>รหัสผ่าน</mat-label>
-              <input 
-                matInput 
-                type="password" 
-                [(ngModel)]="passwordSid" 
-                name="passwordSid"
-                [disabled]="loading"
-                required>
-              <mat-icon matPrefix>lock</mat-icon>
-            </mat-form-field>
-            
-            <button 
-              mat-raised-button 
-              color="primary" 
-              type="submit" 
-              class="full-width login-button"
-              [disabled]="loading">
-              <mat-icon *ngIf="!loading">login</mat-icon>
-              <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
-              <span>{{ loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ' }}</span>
-            </button>
-          </form>
-        </mat-card-content>
-        
-        <mat-card-footer>
-          <div class="footer-content">
-            <p><mat-icon>info</mat-icon> สำหรับสถานศึกษาวิชาทหาร</p>
-            <span 
-              class="footer-toggle-text" 
-              (click)="toggleLoginType()">
-              <mat-icon>person</mat-icon>
-              ใช้เลขบัตรประชาชน
-            </span>
-          </div>
-        </mat-card-footer>
+      <!-- Login by PID -->
+      <form *ngIf="!showSchoolLogin" (ngSubmit)="loginByPID()" class="login-form" autocomplete="off">
+        <div class="form-group">
+          <label class="form-label" for="upid">เลขประจำตัวประชาชน</label>
+          <input
+            id="upid"
+            type="text"
+            class="form-control"
+            name="upid"
+            placeholder="กรอกเลขประจำตัวประชาชน 13 หลัก"
+            maxlength="13"
+            [(ngModel)]="upid"
+            [disabled]="loading"
+            required>
+          <small class="form-hint">13 หลัก</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="passwordPid">รหัสผ่าน</label>
+          <input
+            id="passwordPid"
+            type="password"
+            class="form-control"
+            name="passwordPid"
+            placeholder="กรอกรหัสผ่าน"
+            autocomplete="current-password"
+            [(ngModel)]="passwordPid"
+            [disabled]="loading"
+            required>
+        </div>
+
+        <button
+          type="submit"
+          class="btn btn-success btn-block"
+          [disabled]="loading">
+          <mat-spinner *ngIf="loading" diameter="18"></mat-spinner>
+          <span>{{ loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ' }}</span>
+        </button>
+      </form>
+
+      <!-- Login by School ID -->
+      <form *ngIf="showSchoolLogin" (ngSubmit)="loginBySchoolId()" class="login-form" autocomplete="off">
+        <div class="form-group">
+          <label class="form-label" for="schoolId">รหัสสถานศึกษาวิชาทหาร</label>
+          <input
+            id="schoolId"
+            type="text"
+            class="form-control"
+            name="schoolId"
+            placeholder="กรอกรหัสสถานศึกษา"
+            [(ngModel)]="schoolId"
+            [disabled]="loading"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="passwordSid">รหัสผ่าน</label>
+          <input
+            id="passwordSid"
+            type="password"
+            class="form-control"
+            name="passwordSid"
+            placeholder="กรอกรหัสผ่าน"
+            autocomplete="current-password"
+            [(ngModel)]="passwordSid"
+            [disabled]="loading"
+            required>
+        </div>
+
+        <button
+          type="submit"
+          class="btn btn-success btn-block"
+          [disabled]="loading">
+          <mat-spinner *ngIf="loading" diameter="18"></mat-spinner>
+          <span>{{ loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ' }}</span>
+        </button>
+      </form>
+
+      <div class="alert alert-danger" *ngIf="errorMessage">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMessage }}</span>
       </div>
-    </mat-card>
-  </div>
 
-  <!-- Footer Links -->
-  <div class="footer-links">
-    <a href="https://www.tdc.mi.th/download/manualSchool63-1.pdf" target="_blank" mat-button>
-      <mat-icon>book</mat-icon> ขั้นตอนปฏิบัติ
-    </a>
-    <a href="https://www.tdc.mi.th/download/SchoolRegisterManual.pdf" target="_blank" mat-button>
-      <mat-icon>picture_as_pdf</mat-icon> คู่มือการใช้งาน
-    </a>
-  </div>
+      <!-- Toggle -->
+      <div class="login-toggle">
+        <a class="toggle-link" (click)="toggleLoginType()">
+          <mat-icon>{{ showSchoolLogin ? 'person' : 'school' }}</mat-icon>
+          <span>{{ showSchoolLogin ? 'ใช้เลขประจำตัวประชาชน' : 'ใช้รหัสสถานศึกษา' }}</span>
+        </a>
+      </div>
 
-  <!-- Footer Info -->
-  <div class="footer-info">
-    <p class="contact-info">
-      <mat-icon>phone</mat-icon> โทร. 02-226-4427 | 
-      <mat-icon>email</mat-icon> หน่วยบัญชาการรักษาดินแดน
-    </p>
-    <p class="copyright">© 2024 Territorial Defense Command. All rights reserved.</p>
+      <!-- Footer links -->
+      <div class="login-footer-links">
+        <a href="https://www.tdc.mi.th/download/manualSchool63-1.pdf" target="_blank">
+          <mat-icon>menu_book</mat-icon> ขั้นตอนปฏิบัติ
+        </a>
+        <a href="https://www.tdc.mi.th/download/SchoolRegisterManual.pdf" target="_blank">
+          <mat-icon>picture_as_pdf</mat-icon> คู่มือการใช้งาน
+        </a>
+      </div>
+
+      <div class="login-foot-note">
+        <p>
+          <mat-icon>phone</mat-icon> โทร. 02-226-4427
+          &nbsp;|&nbsp;
+          หน่วยบัญชาการรักษาดินแดน
+        </p>
+        <p class="copyright">© 2024 Territorial Defense Command. All rights reserved.</p>
+        <p class="recaptcha-legal">
+          This site is protected by reCAPTCHA and the Google
+          <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+          and
+          <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>
+          apply.
+        </p>
+      </div>
+    </div>
   </div>
 </div>

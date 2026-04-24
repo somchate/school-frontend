@@ -19,23 +19,17 @@
         สามารถเข้าใช้งานบริการข้อมูลออนไลน์ของกรมการปกครองได้ตลอดเวลา (24/7 service)
       </div>
 
-      <div class="form-row">
+      <div class="filter-row">
         <mat-form-field appearance="fill">
           <mat-label>เลขประจำตัวประชาชน</mat-label>
           <input matInput type="text" [(ngModel)]="searchPid" maxlength="13" placeholder="เลขอารบิก" (keypress)="onPidKeyPress($event)" />
         </mat-form-field>
 
-        <div class="search-actions">
-          <button mat-flat-button color="primary" (click)="searchByPid('linkage')" [disabled]="isSearching">
-            <mat-icon *ngIf="!isSearching">search</mat-icon>
-            <mat-spinner *ngIf="isSearching" diameter="18"></mat-spinner>
-            สิทธิตนเอง (Linkage)
-          </button>
-          <button mat-stroked-button disabled>
-            <mat-icon>search</mat-icon>
-            สิทธิ User กลาง
-          </button>
-        </div>
+        <button mat-flat-button color="primary" class="search-button" (click)="searchByPid('linkage')" [disabled]="isSearching">
+          <mat-icon *ngIf="!isSearching">search</mat-icon>
+          <mat-spinner *ngIf="isSearching" diameter="18"></mat-spinner>
+          ค้นหา
+        </button>
       </div>
     </mat-card-content>
   </mat-card>
@@ -138,6 +132,7 @@
           </mat-form-field>
         </td>
       </tr>
+      <!--
       <tr>
         <td class="td-label">จบจากสถานศึกษา :</td>
         <td class="td-value">
@@ -155,7 +150,7 @@
         </td>
       </tr>
       <tr>
-        <td class="td-label"><span class="req">เกรดเฉลี่ย *</span> :</td>
+        <td class="td-label">เกรดเฉลี่ย :</td>
         <td class="td-value">
           <mat-form-field appearance="fill" class="inline small">
             <mat-label>เกรดเฉลี่ย</mat-label>
@@ -164,6 +159,8 @@
           <span class="note">(เลขอารบิก 0.00 - 4.00)</span>
         </td>
       </tr>
+      -->
+
       <tr>
         <td class="td-label">เบอร์โทรศัพท์ :</td>
         <td class="td-value">
@@ -213,11 +210,11 @@
           </mat-form-field>
           <mat-form-field appearance="fill" class="inline tiny">
             <mat-label>หมู่ที่</mat-label>
-            <input matInput type="text" [value]="personData.addrMoo" readonly>
+            <input matInput type="text" [value]="displayMoo(personData.addrMoo)" readonly>
           </mat-form-field>
           <mat-form-field appearance="fill" class="inline">
             <mat-label>ถนน</mat-label>
-            <input matInput type="text" [value]="personData.roadName" readonly>
+            <input matInput type="text" [value]="displayDash(personData.roadName)" readonly>
           </mat-form-field>
         </td>
       </tr>
@@ -226,26 +223,26 @@
         <td class="td-value">
           <mat-form-field appearance="fill" class="inline">
             <mat-label>ตรอก</mat-label>
-            <input matInput type="text" [value]="personData.trokName" readonly>
+            <input matInput type="text" [value]="displayDash(personData.trokName)" readonly>
           </mat-form-field>
           <mat-form-field appearance="fill" class="inline">
             <mat-label>ซอย</mat-label>
-            <input matInput type="text" [value]="personData.soiName" readonly>
+            <input matInput type="text" [value]="displayDash(personData.soiName)" readonly>
           </mat-form-field>
         </td>
       </tr>
       <tr>
         <td class="td-label">&nbsp;</td>
         <td class="td-value">
-          <mat-form-field appearance="fill" class="inline small">
+          <mat-form-field appearance="fill" class="inline">
             <mat-label>ตำบล</mat-label>
             <input matInput type="text" [value]="personData.districtName" readonly>
           </mat-form-field>
-          <mat-form-field appearance="fill" class="inline small">
+          <mat-form-field appearance="fill" class="inline">
             <mat-label>อำเภอ</mat-label>
             <input matInput type="text" [value]="personData.amphurName" readonly>
           </mat-form-field>
-          <mat-form-field appearance="fill" class="inline small">
+          <mat-form-field appearance="fill" class="inline">
             <mat-label>จังหวัด</mat-label>
             <input matInput type="text" [value]="personData.provinceName" readonly>
           </mat-form-field>
@@ -261,15 +258,15 @@
         <td class="td-value">
           <mat-form-field appearance="fill" class="inline tiny">
             <mat-label>เลขที่</mat-label>
-            <input matInput type="text" [value]="personData.existingData?.armyAddr || ''" readonly>
+            <input matInput type="text" [value]="displayDash(personData.existingData?.armyAddr)" readonly>
           </mat-form-field>
           <mat-form-field appearance="fill" class="inline tiny">
             <mat-label>หมู่ที่</mat-label>
-            <input matInput type="text" [value]="personData.existingData?.armyMoo || ''" readonly>
+            <input matInput type="text" [value]="displayDash(personData.existingData?.armyMoo)" readonly>
           </mat-form-field>
           <mat-form-field appearance="fill" class="inline">
             <mat-label>ถนน</mat-label>
-            <input matInput type="text" [value]="personData.existingData?.armyRoad || ''" readonly>
+            <input matInput type="text" [value]="displayDash(personData.existingData?.armyRoad)" readonly>
           </mat-form-field>
         </td>
       </tr>
@@ -278,11 +275,11 @@
         <td class="td-value">
           <mat-form-field appearance="fill" class="inline">
             <mat-label>ตรอก</mat-label>
-            <input matInput type="text" [value]="personData.existingData?.armyTrok || ''" readonly>
+            <input matInput type="text" [value]="displayDash(personData.existingData?.armyTrok)" readonly>
           </mat-form-field>
           <mat-form-field appearance="fill" class="inline">
             <mat-label>ซอย</mat-label>
-            <input matInput type="text" [value]="personData.existingData?.armySoi || ''" readonly>
+            <input matInput type="text" [value]="displayDash(personData.existingData?.armySoi)" readonly>
           </mat-form-field>
         </td>
       </tr>
@@ -291,15 +288,15 @@
         <td class="td-value">
           <mat-form-field appearance="fill" class="inline small">
             <mat-label>ตำบล</mat-label>
-            <input matInput type="text" [value]="personData.existingData?.armyDistrict || ''" readonly>
+            <input matInput type="text" [value]="displayDash(personData.existingData?.armyDistrict)" readonly>
           </mat-form-field>
           <mat-form-field appearance="fill" class="inline small">
             <mat-label>อำเภอ</mat-label>
-            <input matInput type="text" [value]="personData.existingData?.armyAmphur || ''" readonly>
+            <input matInput type="text" [value]="displayDash(personData.existingData?.armyAmphur)" readonly>
           </mat-form-field>
           <mat-form-field appearance="fill" class="inline small">
             <mat-label>จังหวัด</mat-label>
-            <input matInput type="text" [value]="personData.existingData?.armyProvince || ''" readonly>
+            <input matInput type="text" [value]="displayDash(personData.existingData?.armyProvince)" readonly>
           </mat-form-field>
         </td>
       </tr>

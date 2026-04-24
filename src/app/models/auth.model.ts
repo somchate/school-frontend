@@ -13,6 +13,8 @@ export interface LoginRequest {
   cid?: string;
   xxxReply?: string;
   verified?: boolean;
+  /** Google reCAPTCHA v3 */
+  recaptchaToken?: string;
 }
 
 export interface LoginResponse {

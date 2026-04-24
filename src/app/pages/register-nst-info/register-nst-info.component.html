@@ -1,4 +1,11 @@
 <div class="page-container">
+
+  <!-- Full-page overlay spinner -->
+  <div class="page-overlay" *ngIf="isLoading">
+    <mat-spinner diameter="56"></mat-spinner>
+    <div class="overlay-text">กำลังโหลดข้อมูล...</div>
+  </div>
+
   <div class="page-title">
     <mat-icon>assignment_turned_in</mat-icon>
     <span>รับรายงานตัว/โอนย้าย นศท.</span>
@@ -13,28 +20,28 @@
       <mat-card-title>ค้นหาข้อมูล นศท.</mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <div class="form-row">
-        <mat-form-field appearance="fill" class="ff-small">
+      <div class="filter-row">
+        <mat-form-field appearance="fill">
           <mat-label>ชั้นปี (เดิม)</mat-label>
-          <mat-select [(ngModel)]="filterAtClass">
+          <mat-select [(ngModel)]="filterAtClass" (ngModelChange)="onAtClassChange()">
             <mat-option value="">-เลือก-</mat-option>
             <mat-option *ngFor="let y of classYears" [value]="y">{{ y }}</mat-option>
           </mat-select>
         </mat-form-field>
 
-        <mat-form-field appearance="fill" class="ff-small">
+        <mat-form-field appearance="fill">
           <mat-label>เพศ</mat-label>
-          <mat-select [(ngModel)]="filterSex">
+          <mat-select [(ngModel)]="filterSex" (ngModelChange)="onSexChange()" [disabled]="!filterAtClass">
             <mat-option value="">--เลือก--</mat-option>
             <mat-option value="M">ชาย</mat-option>
             <mat-option value="F">หญิง</mat-option>
           </mat-select>
         </mat-form-field>
 
-        <mat-form-field appearance="fill" class="ff-wide">
+        <mat-form-field appearance="fill">
           <mat-label>ประเภทบัญชี</mat-label>
-          <mat-select [(ngModel)]="nstStatus">
-            <mat-option value="*">--- ทั้งหมด ---</mat-option>
+          <mat-select [(ngModel)]="nstStatus" (ngModelChange)="clearResults()" [disabled]="!filterAtClass || !filterSex">
+            <mat-option value="">-- เลือก --</mat-option>
             <mat-option value="5">เลื่อนชั้น</mat-option>
             <mat-option value="2">ซ้ำชั้น</mat-option>
             <mat-optgroup label="รอรับสิทธิ">
@@ -50,12 +57,10 @@
           </mat-select>
         </mat-form-field>
 
-        <div class="search-actions">
-          <button mat-flat-button color="primary" (click)="search()">
-            <mat-icon>search</mat-icon>
-            ค้นหา
-          </button>
-        </div>
+        <button mat-flat-button color="primary" class="search-button" (click)="search()" [disabled]="!canSearch">
+          <mat-icon>search</mat-icon>
+          ค้นหา
+        </button>
       </div>
     </mat-card-content>
   </mat-card>
@@ -63,22 +68,7 @@
   <!-- ผลการค้นหา: 2-list layout -->
   <ng-container *ngIf="hasSearched">
 
-    <!-- ปุ่มพิมพ์บัญชี -->
-    <mat-card class="section-card" *ngIf="hasSearched">
-      <mat-card-content class="print-row">
-        <button mat-flat-button color="primary" [disabled]="printDisabled" (click)="printReport()">
-          <mat-icon>print</mat-icon>
-          {{ getPrintLabel() }}
-        </button>
-      </mat-card-content>
-    </mat-card>
-
-    <div *ngIf="isLoading" class="loading">
-      <mat-spinner diameter="40"></mat-spinner>
-      <div class="loading-text">กำลังโหลดข้อมูล...</div>
-    </div>
-
-    <div class="two-list-layout" *ngIf="!isLoading">
+    <div class="two-list-layout" *ngIf="hasSearched">
 
       <!-- คอลัมน์ซ้าย: โอนย้ายเข้า + ยังไม่ได้รายงานตัว -->
       <div class="left-column">
@@ -98,14 +88,41 @@
           <mat-card-content *ngIf="showTransferSection || nstStatus.startsWith('3')">
             <div class="form-row">
               <mat-form-field appearance="fill" class="ff-wide">
-                <mat-label>เลขประจำตัว ปชช. (13) หรือ รหัส นศท. (10)</mat-label>
+                <mat-label>#นศท. หรือ #ประชาชน</mat-label>
                 <input matInput type="text" [(ngModel)]="transferRegId" />
               </mat-form-field>
 
-              <mat-form-field appearance="fill" class="ff-wide">
+              <mat-form-field appearance="fill" class="ff-small">
+                <mat-label>จังหวัด</mat-label>
+                <mat-icon matPrefix class="input-search-icon">search</mat-icon>
+                <input matInput type="text"
+                  [(ngModel)]="transferProvinceFilterText"
+                  [matAutocomplete]="autoProvince"
+                  (ngModelChange)="onProvinceInputChange()"
+                  placeholder="พิมพ์ชื่อจังหวัด..." />
+                <mat-autocomplete #autoProvince (optionSelected)="onProvinceSelected($event)">
+                  <mat-option *ngFor="let p of filteredTransferProvinceOptions" [value]="p.desc">
+                    {{ p.desc }}
+                  </mat-option>
+                </mat-autocomplete>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="fill" class="ff-full">
                 <mat-label>สถานศึกษา</mat-label>
-                <input matInput type="text" [(ngModel)]="transferSchoolName" readonly />
-                <input type="hidden" [(ngModel)]="transferSchoolId" />
+                <mat-icon matPrefix class="input-search-icon">search</mat-icon>
+                <input matInput type="text"
+                  [(ngModel)]="transferSchoolFilterText"
+                  [matAutocomplete]="autoSchool"
+                  [disabled]="!transferProvinceId"
+                  (ngModelChange)="onSchoolInputChange()"
+                  placeholder="พิมพ์ชื่อสถานศึกษา..." />
+                <mat-autocomplete #autoSchool (optionSelected)="onSchoolSelected($event)">
+                  <mat-option *ngFor="let s of filteredTransferSchoolOptions" [value]="s.schoolShortName || s.schoolName">
+                    {{ s.schoolShortName || s.schoolName }} ({{ s.schoolId }})
+                  </mat-option>
+                </mat-autocomplete>
               </mat-form-field>
             </div>
 
@@ -189,7 +206,7 @@
               ></tr>
             </table>
           </div>
-          <div *ngIf="nreqList.length === 0" class="list-empty">ไม่มีข้อมูล</div>
+          <div *ngIf="!isLoading && nreqList.length === 0" class="list-empty">ไม่มีข้อมูล</div>
         </div>
       </div>
 
@@ -200,12 +217,20 @@
           color="primary"
           class="arrow-btn"
           (click)="removeFromReq()"
+          [disabled]="!canMoveFromReq"
           title="นำ นศท. ออกจากรายงานตัว"
-          *ngIf="hasSearched && !isLoading"
+          *ngIf="hasSearched"
         >
           <mat-icon>chevron_left</mat-icon>
         </button>
-        <button mat-mini-fab color="primary" class="arrow-btn" (click)="addToReq()" title="นำ นศท. เข้ารายงานตัว">
+        <button
+          mat-mini-fab
+          color="primary"
+          class="arrow-btn"
+          (click)="addToReq()"
+          [disabled]="!canMoveToReq"
+          title="นำ นศท. เข้ารายงานตัว"
+        >
           <mat-icon>chevron_right</mat-icon>
         </button>
       </div>
@@ -253,7 +278,7 @@
               ></tr>
             </table>
           </div>
-          <div *ngIf="reqList.length === 0" class="list-empty">ไม่มีข้อมูล</div>
+          <div *ngIf="!isLoading && reqList.length === 0" class="list-empty">ไม่มีข้อมูล</div>
         </div>
       </div>
 

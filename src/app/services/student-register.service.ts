@@ -243,8 +243,8 @@ export class StudentRegisterService {
 
           if (d1) {
             p.pid = toStr(pid);
-            p.titleId = toStr(d1.titleCode);
-            p.titleDesc = toStr(d1.titleDesc || d1.titleName);
+            p.titleId = pad(d1.titleCode, 3);
+            p.titleDesc = toStr(d1.titleName || d1.titleDesc);
             p.fname = toStr(d1.firstName);
             p.lname = toStr(d1.lastName);
 
@@ -271,18 +271,23 @@ export class StudentRegisterService {
           if (d38) {
             p.houseId = toStr(d38.houseID);
             p.addrNo = toStr(d38.houseNo);
-            p.addrMoo = toStr(d38.villageNo);
-            p.trokId = toStr(d38.alleyWayCode);
+            p.addrMoo = pad(d38.villageNo, 2);
+            p.trokId = pad(d38.alleyWayCode, 4);
             p.trokName = toStr(d38.alleyWayDesc);
-            p.soiId = toStr(d38.alleyCode);
+            p.soiId = pad(d38.alleyCode, 4);
             p.soiName = toStr(d38.alleyDesc);
-            p.roadId = toStr(d38.roadCode);
+            p.roadId = pad(d38.roadCode, 4);
             p.roadName = toStr(d38.roadDesc);
 
-            p.districtId = toStr(d38.subdistrictCode);
-            p.districtName = toStr(d38.subdistrictDesc);
-            p.amphurId = toStr(d38.districtCode);
+            const provCode2 = pad(d38.provinceCode, 2);
+            const distCode2 = pad(d38.districtCode, 2);
+            const subDistCode2 = pad(d38.subdistrictCode, 2);
+            // mia_student_register.REG_AMPHUR_ID  = provinceCode + districtCode (4 digits)
+            // mia_student_register.REG_DISTRIC_ID = provinceCode + districtCode + subdistrictCode (6 digits)
+            p.amphurId = provCode2 + distCode2;
             p.amphurName = toStr(d38.districtDesc);
+            p.districtId = provCode2 + distCode2 + subDistCode2;
+            p.districtName = toStr(d38.subdistrictDesc);
             p.provinceCid = toStr(d38.provinceCode);
             p.provinceName = toStr(d38.provinceDesc);
             p.rCode = toStr(d38.rcodeCode);
@@ -404,8 +409,21 @@ export class StudentRegisterService {
   }
 
   // บันทึกข้อมูลผู้สมัคร (New / Edit / ChangeSchl)
-  saveStudent(data: StudentFormData): Observable<any> {
-    return this.http.post(`${this.API_URL}/student/save`, data);
+  saveStudent(
+    data: StudentFormData,
+    schoolId: string,
+    year: string,
+    photo?: { photoBase64?: string; photoMimeType?: string },
+    titleDesc?: string
+  ): Observable<any> {
+    return this.http.post(`${this.API_URL}/student/save`, {
+      ...data,
+      schoolId,
+      year,
+      titleDesc,
+      photoBase64: photo?.photoBase64,
+      photoMimeType: photo?.photoMimeType
+    });
   }
 
   // ลบข้อมูลผู้สมัคร

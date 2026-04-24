@@ -20,8 +20,8 @@
           </mat-select>
         </mat-form-field>
 
-        <mat-form-field appearance="fill">
-          <mat-label>ชั้นปี</mat-label>
+        <mat-form-field appearance="fill" *ngIf="showAtClass">
+          <mat-label>ชั้นปี (ใหม่)</mat-label>
           <mat-select [(ngModel)]="atClass">
             <mat-option *ngFor="let c of classOptions" [value]="c">ชั้นปีที่ {{ c }}</mat-option>
           </mat-select>
@@ -30,17 +30,14 @@
         <mat-form-field appearance="fill">
           <mat-label>เพศ</mat-label>
           <mat-select [(ngModel)]="sex">
-            <mat-option value="">ทั้งหมด</mat-option>
+            <mat-option value="">-- กรุณาเลือก --</mat-option>
             <mat-option value="M">ชาย</mat-option>
             <mat-option value="F">หญิง</mat-option>
           </mat-select>
         </mat-form-field>
-      </div>
 
-      <div class="filter-actions">
-        <button mat-flat-button color="primary" (click)="search()" [disabled]="isLoading">
-          <mat-icon *ngIf="!isLoading">search</mat-icon>
-          <mat-spinner *ngIf="isLoading" diameter="18"></mat-spinner>
+        <button mat-flat-button color="primary" class="search-button" (click)="search()" [disabled]="!canSearch">
+          <mat-icon>search</mat-icon>
           ค้นหา
         </button>
       </div>
@@ -52,13 +49,8 @@
       <mat-icon mat-card-avatar>list</mat-icon>
       <mat-card-title>ผลการค้นหา</mat-card-title>
       <span class="spacer"></span>
-      <button
-        mat-flat-button
-        color="accent"
-        class="header-action"
-        (click)="printSelected()"
-        [disabled]="isLoading || nstList.length === 0 || selectedPids.size === 0"
-      >
+      <button mat-flat-button color="accent" class="header-action" (click)="printSelected()"
+        [disabled]="isLoading || nstList.length === 0 || selectedPids.size === 0">
         <mat-icon>print</mat-icon>
         พิมพ์ที่เลือก ({{ selectedPids.size }})
       </button>
@@ -109,12 +101,7 @@
             <ng-container matColumnDef="print">
               <th mat-header-cell *matHeaderCellDef>พิมพ์ใบสมัคร</th>
               <td mat-cell *matCellDef="let row">
-                <button
-                  mat-icon-button
-                  color="primary"
-                  (click)="toggleOne(row.regPid)"
-                  matTooltip="เลือกพิมพ์"
-                >
+                <button mat-icon-button color="primary" (click)="printOne(row.regPid)" matTooltip="พิมพ์ใบสมัคร">
                   <mat-icon>print</mat-icon>
                 </button>
               </td>

@@ -10,10 +10,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule } from '@angular/material/table';
+import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { DashboardService } from '../../services/dashboard.service';
 import { NstRegisterService, NstRegister } from '../../services/nst-register.service';
 import { DialogService } from '../../services/dialog.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-print-register',
@@ -21,6 +23,7 @@ import { DialogService } from '../../services/dialog.service';
   imports: [
     CommonModule,
     FormsModule,
+    HttpClientModule,
     MatCardModule,
     MatIconModule,
     MatFormFieldModule,
@@ -58,6 +61,7 @@ export class PrintRegisterComponent implements OnInit {
   ];
 
   classOptions: string[] = [];
+  showAtClass: boolean = false;
   nstList: NstRegister[] = [];
   isLoading: boolean = false;
   searched: boolean = false;
@@ -68,8 +72,14 @@ export class PrintRegisterComponent implements OnInit {
     private authService: AuthService,
     private dashboardService: DashboardService,
     private nstService: NstRegisterService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private http: HttpClient
   ) {}
+
+  private getAuthHeaders(): HttpHeaders | undefined {
+    const token = this.authService.getToken();
+    return token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : undefined;
+  }
 
   ngOnInit(): void {
     this.dashboardService.getYearEducate().subscribe({
@@ -93,16 +103,34 @@ export class PrintRegisterComponent implements OnInit {
   }
 
   prepareClass(): void {
+    // Port จาก legacy print_register.jsp: prepareClass() + SQL builder
+    //   PsnStatus = '0' (สมัครใหม่)    → ซ่อนชั้นปี (ไม่ใช้ filter NST_AT_CLASS)
+    //   PsnStatus ลงท้าย '5' (เลื่อนชั้น) → ชั้นปี (ใหม่) 2-5 (disable ชั้น 1)
+    //   อื่นๆ                         → ชั้นปี 1-5
     if (this.psnStatus === '0') {
-      this.classOptions = ['1', '2', '3', '4', '5'];
-    } else if (this.psnStatus.includes('5')) {
+      this.showAtClass = false;
+      this.classOptions = [];
+      this.atClass = '';
+      this.sex = ''; // reset เพศให้เลือกใหม่
+    } else if (this.psnStatus.endsWith('5')) {
+      this.showAtClass = true;
       this.classOptions = ['2', '3', '4', '5'];
-    } else if (this.psnStatus.includes('2')) {
-      this.classOptions = ['1', '2', '3', '4', '5'];
+      if (!this.classOptions.includes(this.atClass)) {
+        this.atClass = '2';
+      }
     } else {
+      this.showAtClass = true;
       this.classOptions = ['1', '2', '3', '4', '5'];
+      if (!this.classOptions.includes(this.atClass)) {
+        this.atClass = '1';
+      }
     }
-    this.atClass = this.classOptions.length > 0 ? this.classOptions[0] : '';
+  }
+
+  get canSearch(): boolean {
+    if (this.sex === '') return false;
+    if (this.psnStatus !== '0' && this.atClass === '') return false;
+    return true;
   }
 
   search(): void {
@@ -112,7 +140,19 @@ export class PrintRegisterComponent implements OnInit {
     this.selectedPids.clear();
     this.checkAll = false;
 
-    this.nstService.searchNst(this.schoolId, this.currentYear, '', this.atClass, this.sex, '', '', this.psnStatus).subscribe({
+    // Legacy: ถ้า PsnStatus ลงท้าย '5' ใช้ atClass-1 ใน query
+    //   (เพราะ MIA_NST_REGISTER บันทึก NST_AT_CLASS = ชั้นเดิม ไม่ใช่ชั้นใหม่)
+    //   (print_register.jsp line 48)
+    let queryAtClass = this.atClass;
+    if (this.psnStatus !== '0' && this.psnStatus.endsWith('5') && this.atClass) {
+      queryAtClass = String(Number(this.atClass) - 1);
+    }
+    // psnStatus='0' → ไม่ใช้ atClass (legacy SQL ไม่ได้ filter NST_AT_CLASS)
+    if (this.psnStatus === '0') {
+      queryAtClass = '';
+    }
+
+    this.nstService.searchNst(this.schoolId, this.currentYear, '', queryAtClass, this.sex, '', '', this.psnStatus).subscribe({
       next: (data) => { this.nstList = data || []; this.isLoading = false; },
       error: () => { this.nstList = []; this.isLoading = false; }
     });
@@ -136,11 +176,35 @@ export class PrintRegisterComponent implements OnInit {
     } else {
       this.selectedPids.add(pid);
     }
-    this.checkAll = this.selectedPids.size === this.nstList.length;
+    this.checkAll = this.nstList.length > 0
+      && this.nstList.every(n => this.selectedPids.has(n.regPid));
   }
 
   isSelected(pid: string): boolean {
     return this.selectedPids.has(pid);
+  }
+
+  printOne(pid: string): void {
+    const body = {
+      pid,
+      psnStatus: this.psnStatus,
+      year: this.currentYear
+    };
+    const headers = this.getAuthHeaders();
+
+    this.http.post(`${environment.apiUrl}/nst/report/rd`, body, { responseType: 'blob', headers }).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const win = window.open(url, '_blank');
+        if (win) {
+          win.onload = () => URL.revokeObjectURL(url);
+        }
+      },
+      error: async (err) => {
+        console.error('Error generating RD report:', err);
+        await this.dialogService.alert('เกิดข้อผิดพลาดในการสร้างรายงาน');
+      }
+    });
   }
 
   async printSelected(): Promise<void> {
@@ -148,8 +212,32 @@ export class PrintRegisterComponent implements OnInit {
       await this.dialogService.alert('กรุณาเลือก นศท. ที่ต้องการพิมพ์ใบสมัคร');
       return;
     }
+
     const pids = Array.from(this.selectedPids);
-    const url = `print_register_form.jsp?pids=${pids.join(',')}&year=${this.currentYear}&schoolId=${this.schoolId}`;
-    window.open(url, '_blank');
+    const body = {
+      pids,
+      schoolId: this.schoolId,
+      schoolName: this.schoolName,
+      atClass: this.atClass,
+      sex: this.sex,
+      psnStatus: this.psnStatus,
+      year: this.currentYear
+    };
+
+    const headers = this.getAuthHeaders();
+
+    this.http.post(`${environment.apiUrl}/nst/report/register`, body, { responseType: 'blob', headers }).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const win = window.open(url, '_blank');
+        if (win) {
+          win.onload = () => URL.revokeObjectURL(url);
+        }
+      },
+      error: async (err) => {
+        console.error('Error generating report:', err);
+        await this.dialogService.alert('เกิดข้อผิดพลาดในการสร้างรายงาน');
+      }
+    });
   }
 }

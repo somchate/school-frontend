@@ -8,8 +8,23 @@
 
 .section-card {
   margin-bottom: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
 
   mat-card-header {
+    padding-bottom: 6px;
+
+    mat-card-title {
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    mat-card-subtitle {
+      color: #64748b;
+      font-size: 12px;
+    }
+
     mat-icon[mat-card-avatar] {
       background: rgba(0, 98, 65, 0.12);
       color: #006241;
@@ -23,6 +38,10 @@
       justify-content: center;
     }
   }
+}
+
+.search-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 }
 
 .form-row {
@@ -41,6 +60,49 @@
   display: flex;
   justify-content: flex-end;
   min-width: 160px;
+
+  button {
+    min-height: 52px;
+    border-radius: 10px;
+    padding: 0 20px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+}
+
+/* 12-column responsive grid for Material form fields */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: 16px;
+  row-gap: 4px;
+  margin-top: 8px;
+
+  mat-form-field {
+    width: 100%;
+  }
+
+  .col-2  { grid-column: span 2; }
+  .col-1  { grid-column: span 1; }
+  .col-3  { grid-column: span 3; }
+  .col-4  { grid-column: span 4; }
+  .col-5  { grid-column: span 5; }
+  .col-6  { grid-column: span 6; }
+  .col-7  { grid-column: span 7; }
+  .col-8  { grid-column: span 8; }
+  .col-9  { grid-column: span 9; }
+  .col-12 { grid-column: span 12; }
+}
+
+.profile-card {
+  .form-grid {
+    row-gap: 8px;
+  }
+
+  input[readonly] {
+    color: #0f172a;
+    font-weight: 600;
+  }
 }
 
 .message-card {
@@ -48,124 +110,113 @@
 }
 
 .message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 10px 12px;
   border-radius: 12px;
+
+  &.error {
+    color: #991b1b;
+    background: #fef2f2;
+    border: 1px solid #fee2e2;
+
+    mat-icon { color: #b91c1c; }
+  }
 }
 
-.message.error {
-  color: #991b1b;
-  background: #fef2f2;
-  border: 1px solid #fee2e2;
-}
-
-.loading {
+.mat-overlay-spinner {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 28px 0;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(2px);
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 32px;
+    border-radius: 12px;
+    min-width: 240px;
+  }
+
+  &__text {
+    color: rgba(0, 0, 0, 0.74);
+    font-size: 14px;
+    margin: 0;
+  }
 }
 
-.loading-text {
-  color: #64748b;
-  font-size: 14px;
-}
-
-
-.inline {
-  display: inline-block;
-  vertical-align: middle;
-  margin: 4px 6px 4px 0;
-  width: 220px;
-}
-
-// ฟอร์มข้อมูล นศท. (จาก template.css ของ JSP)
 .nst-form {
-  padding: 8px;
+  display: flex;
+  flex-direction: column;
 }
 
-.form-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 2px;
+.history-card {
+  .history-table-wrap {
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+  }
 
-  td {
-    padding: 4px 8px;
+  .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 860px;
     font-size: 13px;
-    vertical-align: middle;
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tbody tr:hover {
+      background: #f8fafc;
+    }
   }
 
-  input[type="text"],
-  select {
+  .history-empty {
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    padding: 16px;
+    color: #64748b;
+    text-align: center;
     font-size: 13px;
-    padding: 3px 6px;
-    border: 1px solid #ccc;
-    border-radius: 2px;
-  }
-
-  select {
-    padding: 2px 4px;
-  }
-
-  input[type="checkbox"] {
-    vertical-align: middle;
-    margin-right: 4px;
   }
 }
 
-.td-head {
-  background-color: #6d7856;
-  color: #fff;
-  font-weight: bold;
-  padding: 6px 8px !important;
-  font-size: 13px !important;
+@media (max-width: 960px) {
+  .form-grid {
+    [class*="col-"] { grid-column: span 6; }
+    .col-12 { grid-column: span 12; }
+  }
 }
 
-.td-label {
-  width: 180px;
-  white-space: nowrap;
-  font-weight: 500;
-  background-color: #f5f5f0;
-  text-align: right;
-  padding-right: 10px !important;
-}
+@media (max-width: 600px) {
+  .form-grid {
+    [class*="col-"] { grid-column: span 12; }
+  }
 
-.td-value {
-  background-color: #ffffff;
-}
-
-.text-readonly {
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
-  color: #333;
-}
-
-.text-readonly-blue {
-  background-color: #e2e2e2;
-  color: #0039ad;
-  border: 1px solid #ccc;
-}
-
-
-@media (max-width: 768px) {
   .search-actions {
     justify-content: flex-start;
-  }
-
-  .inline {
-    width: min(100%, 520px);
-  }
-
-  .form-table {
-    display: block;
-    overflow-x: auto;
-  }
-
-  .td-label {
-    width: auto;
-    white-space: normal;
   }
 }

@@ -10,6 +10,9 @@ export interface SchoolInfo {
   schoolOpenDate: string;
   schoolAddr: string;
   usrInform: string;
+  certifierFname?: string;
+  certifierLname?: string;
+  certifierPosition?: string;
 }
 
 export interface Inspector {
@@ -38,6 +41,19 @@ export class SchoolInfoService {
 
   updateInform(schoolId: string, inform: string): Observable<SchoolInfo> {
     return this.http.put<SchoolInfo>(`${this.API_URL}/school/inform/${schoolId}`, { inform });
+  }
+
+  updateCertifier(
+    schoolId: string,
+    certifierFname: string,
+    certifierLname: string,
+    certifierPosition: string
+  ): Observable<SchoolInfo> {
+    return this.http.put<SchoolInfo>(`${this.API_URL}/school/certifier/${schoolId}`, {
+      certifierFname,
+      certifierLname,
+      certifierPosition
+    });
   }
 
   getInspectors(schoolId: string): Observable<Inspector[]> {

@@ -1,16 +1,18 @@
 import { Component, HostListener, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { SidebarComponent } from '../sidebar/sidebar.component';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, SidebarComponent, MatSidenavModule, MatToolbarModule, MatIconModule, MatButtonModule],
+  imports: [CommonModule, RouterOutlet, SidebarComponent, MatSidenavModule, MatToolbarModule, MatIconModule, MatButtonModule, MatTooltipModule],
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.scss']
 })
@@ -21,7 +23,7 @@ export class MainLayoutComponent {
   sidenavMode: 'side' | 'over' = 'side';
   sidenavOpened: boolean = true;
 
-  constructor() {
+  constructor(private authService: AuthService, private router: Router) {
     this.updateLayout();
   }
 
@@ -52,5 +54,10 @@ export class MainLayoutComponent {
     if (this.isMobile) {
       this.closeDrawer();
     }
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

@@ -6,15 +6,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { forkJoin } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
-import { NstRegisterService, NstDetailData, LookupItem } from '../../services/nst-register.service';
+import { NstRegisterService, NstDetailData, LookupItem, NstStatusHistoryItem } from '../../services/nst-register.service';
 import { DashboardService } from '../../services/dashboard.service';
 import { DialogService } from '../../services/dialog.service';
+import { SchoolInfoService } from '../../services/school-info.service';
 
 @Component({
   selector: 'app-register-nst',
@@ -27,10 +24,7 @@ import { DialogService } from '../../services/dialog.service';
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule,
-    MatProgressSpinnerModule,
-    MatDividerModule,
-    MatCheckboxModule
+    MatProgressSpinnerModule
   ],
   templateUrl: './register-nst.component.html',
   styleUrls: ['./register-nst.component.scss']
@@ -50,19 +44,15 @@ export class RegisterNstComponent implements OnInit {
   nstData: NstDetailData | null = null;
   showForm: boolean = false;
 
-  // Lookup data
+  /** สำหรับแปลงรหัสสถานะ นศท. เป็นชื่อ (แสดงแบบ readonly) */
   nstStatusList: LookupItem[] = [];
-  natList: LookupItem[] = [];
-  relegList: LookupItem[] = [];
-  employmentList: LookupItem[] = [];
-
-  isSaving: boolean = false;
 
   constructor(
     private authService: AuthService,
     private nstService: NstRegisterService,
     private dashboardService: DashboardService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private schoolInfoService: SchoolInfoService
   ) {}
 
   ngOnInit(): void {
@@ -80,26 +70,19 @@ export class RegisterNstComponent implements OnInit {
       if (user) {
         this.schoolId = user.schoolId || '';
         this.schoolName = user.schoolName || '';
+
+        if (this.schoolId && !this.schoolName) {
+          this.schoolInfoService.getSchoolInfo(this.schoolId).subscribe({
+            next: (info) => { this.schoolName = info.schoolName || this.schoolId; },
+            error: () => { this.schoolName = this.schoolId; }
+          });
+        }
       }
     });
 
-    this.loadLookups();
-  }
-
-  loadLookups(): void {
-    forkJoin({
-      nstStatus: this.nstService.getNstStatusList(),
-      nat: this.nstService.getNatList(),
-      releg: this.nstService.getRelegList(),
-      employment: this.nstService.getEmploymentList()
-    }).subscribe({
-      next: (result) => {
-        this.nstStatusList = result.nstStatus;
-        this.natList = result.nat;
-        this.relegList = result.releg;
-        this.employmentList = result.employment;
-      },
-      error: (err) => console.error('Error loading lookups:', err)
+    this.nstService.getNstStatusList().subscribe({
+      next: (list) => { this.nstStatusList = list; },
+      error: (err) => console.error('Error loading NST status list:', err)
     });
   }
 
@@ -137,7 +120,7 @@ export class RegisterNstComponent implements OnInit {
     this.showForm = false;
     this.nstData = null;
 
-    this.nstService.searchNstDetail(pid, nstId, this.schoolId).subscribe({
+    this.nstService.searchNstDetail(pid, nstId).subscribe({
       next: (data) => {
         this.isSearching = false;
         if (data && data.regPid) {
@@ -156,38 +139,6 @@ export class RegisterNstComponent implements OnInit {
     });
   }
 
-  // บันทึก (จาก checkNull ใน JSP)
-  async saveForm(): Promise<void> {
-    if (!this.nstData) return;
-
-    if (!this.nstData.nstAtClass || !this.nstData.nstStatusId) {
-      await this.dialogService.alert('กรุณาเลือกชั้นปีการศึกษา / สถานะ นศท. และโรงเรียน ให้ครบ!!!');
-      return;
-    }
-
-    // ตรวจสอบ email
-    if (this.nstData.regEmail) {
-      const emailFilter = /^.+@.+\..{2,3}$/;
-      if (!emailFilter.test(this.nstData.regEmail)) {
-        await this.dialogService.alert('ท่านใส่อีเมล์ไม่ถูกต้อง');
-        return;
-      }
-    }
-
-    this.isSaving = true;
-    this.nstService.saveNstDetail(this.nstData).subscribe({
-      next: async () => {
-        this.isSaving = false;
-        await this.dialogService.alert('บันทึกข้อมูล นศท. สำเร็จ');
-      },
-      error: async (err) => {
-        this.isSaving = false;
-        console.error('Error saving NST:', err);
-        await this.dialogService.alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
-      }
-    });
-  }
-
   // ปิด/รีเซ็ต (จาก resetPage ใน JSP)
   resetPage(): void {
     this.showForm = false;
@@ -198,5 +149,17 @@ export class RegisterNstComponent implements OnInit {
   getSexDisplay(): string {
     if (!this.nstData) return '';
     return this.nstData.regSex === 'M' ? 'ชาย' : this.nstData.regSex === 'F' ? 'หญิง' : '';
+  }
+
+  getNstStatusDesc(): string {
+    if (!this.nstData?.nstStatusId) return '';
+    const id = String(this.nstData.nstStatusId).trim();
+    const hit = this.nstStatusList.find(s => String(s.id ?? '').trim() === id);
+    if (hit?.desc?.trim()) return hit.desc.trim();
+    return id;
+  }
+
+  get statusHistoryRows(): NstStatusHistoryItem[] {
+    return this.nstData?.statusHistory ?? [];
   }
 }

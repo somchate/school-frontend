@@ -27,6 +27,8 @@
             "outputPath": "dist/school-frontend",
             "index": "src/index.html",
             "browser": "src/main.ts",
+            "baseHref": "/app/",
+            "deployUrl": "/app/",
             "polyfills": [
               "zone.js"
             ],
@@ -46,6 +48,12 @@
           },
           "configurations": {
             "production": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",
@@ -70,6 +78,9 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "servePath": "/app/"
+          },
           "configurations": {
             "production": {
               "buildTarget": "school-frontend:build:production"

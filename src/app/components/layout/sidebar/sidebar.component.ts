@@ -39,13 +39,18 @@ export class SidebarComponent implements OnInit {
     private router: Router,
     private dashboardService: DashboardService,
     private schoolInfoService: SchoolInfoService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    const now = new Date();
-    let buddhistYear = now.getFullYear() + 543;
-    if (now.getMonth() < 4) { buddhistYear--; }
-    this.currentYear = buddhistYear.toString();
+    this.dashboardService.getYearEducate().subscribe({
+      next: (res) => { this.currentYear = res.yearEducate; },
+      error: () => {
+        const now = new Date();
+        let buddhistYear = now.getFullYear() + 543;
+        if (now.getMonth() < 4) { buddhistYear--; }
+        this.currentYear = buddhistYear.toString();
+      }
+    });
 
     this.authService.currentUser.subscribe(user => {
       if (user) {
@@ -58,7 +63,7 @@ export class SidebarComponent implements OnInit {
             next: (info) => {
               this.schoolName = info.schoolName || this.schoolName;
             },
-            error: () => {}
+            error: () => { }
           });
         }
       }
@@ -74,11 +79,6 @@ export class SidebarComponent implements OnInit {
         icon: 'fas fa-home',
         children: [
           {
-            label: 'หน้าแรก',
-            route: '/welcome',
-            icon: 'fas fa-chevron-right'
-          },
-          {
             label: 'ข้อมูลสถานศึกษา ฯ',
             route: '/school-info',
             icon: 'fas fa-chevron-right',
@@ -92,42 +92,42 @@ export class SidebarComponent implements OnInit {
             minAccessLevel: 2
           },
           {
-            label: 'รายงานตัว นศท.',
+            label: 'รับรายงานตัว นศท.',
             route: '/register-nst-info',
             icon: 'fas fa-chevron-right',
             color: '#339966',
             minAccessLevel: 2
           },
           {
-            label: 'ข้อมูล นศท.',
+            label: 'ตรวจสอบข้อมูล นศท.',
             route: '/register-nst',
             icon: 'fas fa-chevron-right',
             minAccessLevel: 2
           },
-          {
-            label: 'โอนย้ายสถานศึกษาฯ',
-            route: '/transfer-nst',
-            icon: 'fas fa-chevron-right',
-            minAccessLevel: 2
-          },
-          {
-            label: 'ข้อมูลการฝึก',
-            route: '/data-delay-nst',
-            icon: 'fas fa-chevron-right',
-            minAccessLevel: 2
-          },
-          {
-            label: 'ขอรอรับสิทธิ',
-            route: '/nst-waiting-rights',
-            icon: 'fas fa-chevron-right',
-            minAccessLevel: 2
-          },
-          {
-            label: 'ขอยกเว้นการตรวจเลือกฯ',
-            route: '/exception-nst',
-            icon: 'fas fa-chevron-right',
-            minAccessLevel: 2
-          },
+          // {
+          //   label: 'โอนย้ายสถานศึกษาฯ',
+          //   route: '/transfer-nst',
+          //   icon: 'fas fa-chevron-right',
+          //   minAccessLevel: 2
+          // },
+          // {
+          //   label: 'ข้อมูลการฝึก',
+          //   route: '/data-delay-nst',
+          //   icon: 'fas fa-chevron-right',
+          //   minAccessLevel: 2
+          // },
+          // {
+          //   label: 'ขอรอรับสิทธิ',
+          //   route: '/nst-waiting-rights',
+          //   icon: 'fas fa-chevron-right',
+          //   minAccessLevel: 2
+          // },
+          // {
+          //   label: 'ขอยกเว้นการตรวจเลือกฯ',
+          //   route: '/exception-nst',
+          //   icon: 'fas fa-chevron-right',
+          //   minAccessLevel: 2
+          // },
           {
             label: 'พิมพ์บัญชี',
             route: '/print-register',

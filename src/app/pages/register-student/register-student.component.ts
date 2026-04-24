@@ -19,6 +19,7 @@ import {
 } from '../../services/student-register.service';
 import { DashboardService } from '../../services/dashboard.service';
 import { DialogService } from '../../services/dialog.service';
+import { SchoolInfoService } from '../../services/school-info.service';
 
 @Component({
   selector: 'app-register-student',
@@ -71,7 +72,8 @@ export class RegisterStudentComponent implements OnInit {
     private authService: AuthService,
     private studentRegisterService: StudentRegisterService,
     private dashboardService: DashboardService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private schoolInfoService: SchoolInfoService
   ) {}
 
   ngOnInit(): void {
@@ -89,7 +91,19 @@ export class RegisterStudentComponent implements OnInit {
     this.authService.currentUser.subscribe(user => {
       if (user) {
         this.schoolId = user.schoolId || '';
-        this.schoolName = user.schoolName || user.schoolId || '';
+        this.schoolName = user.schoolName || '';
+
+        // ถ้ายังไม่มีชื่อ ให้ดึงจาก API
+        if (this.schoolId && !this.schoolName) {
+          this.schoolInfoService.getSchoolInfo(this.schoolId).subscribe({
+            next: (info) => {
+              this.schoolName = info.schoolName || this.schoolId;
+            },
+            error: () => {
+              this.schoolName = this.schoolId;
+            }
+          });
+        }
       }
     });
   }
@@ -169,30 +183,25 @@ export class RegisterStudentComponent implements OnInit {
     this.isSearching = true;
 
     this.studentRegisterService.searchStudents(this.schoolId, this.currentYear, this.searchPid).subscribe({
-      next: (students) => {
+      next: async (students) => {
         const hasInDb = Array.isArray(students) && students.length > 0;
         const summary = hasInDb ? students[0] : null;
 
         if (hasInDb) {
           const regSchoolId = (summary?.regSchoolId || '').trim();
           const regSchoolName = (summary?.regSchoolName || '').trim();
-
-          if (regSchoolId && this.schoolId && regSchoolId !== this.schoolId) {
-            this.isSearching = false;
-            const pid = summary?.regPid || this.searchPid;
-            const title = (summary?.regTitle || '').trim();
-            const fname = (summary?.regFname || '').trim();
-            const lname = (summary?.regLname || '').trim();
-            const sch = regSchoolName || regSchoolId;
-
-            this.searchMessage = `เลขประจำตัวประชาชน ${pid} ชื่อ${title}${title ? ' ' : ''}${fname} สกุล${lname} มีรายชื่อสมัครผ่าน ชื่อสถานศึกษา ${sch}`;
-            this.searchMessageType = 'error';
-            return;
-          }
+          const otherSchool = regSchoolId && this.schoolId && regSchoolId !== this.schoolId;
 
           this.studentRegisterService.searchByPid(this.searchPid, this.schoolId, this.currentYear, mode).subscribe({
             next: (data) => {
               this.isSearching = false;
+              if (otherSchool) {
+                // บังคับ flag ให้เข้าเงื่อนไข "มีอยู่ในสถานศึกษาอื่น" แล้วแสดงปุ่มโอนย้าย
+                data.isRegistered = true;
+                data.isSameSchool = false;
+                const sch = regSchoolName || regSchoolId;
+                this.searchMessage = `ข้อมูลของ ${data.pid} มีรายชื่อสมัครผ่าน สถานศึกษา ${sch} แล้ว`;
+              }
               this.personData = data;
               this.handlePersonDataResult(data);
             },
@@ -206,6 +215,19 @@ export class RegisterStudentComponent implements OnInit {
           });
           return;
         }
+
+        // ไม่พบในฐานข้อมูล → ถามผู้ใช้ก่อนว่าต้องการค้นจากทะเบียนราษฎร์ (Linkage) หรือไม่
+        this.isSearching = false;
+        const proceed = await this.dialogService.confirm(
+          'ไม่พบข้อมูลผู้สมัครในฐานข้อมูล\n\nต้องการค้นหาจากฐานข้อมูลทะเบียนราษฎร์ (Linkage) หรือไม่?',
+          'ไม่พบข้อมูล'
+        );
+        if (!proceed) {
+          this.searchMessage = 'ยกเลิกการค้นหา';
+          this.searchMessageType = 'info';
+          return;
+        }
+        this.isSearching = true;
 
         this.studentRegisterService.searchByPidLinkage2(this.searchPid).subscribe({
           next: (partial) => {
@@ -262,8 +284,7 @@ export class RegisterStudentComponent implements OnInit {
           error: (err: any) => {
             this.isSearching = false;
             console.error('Error searching person (Linkage2):', err);
-            const errMsg = err.error?.message || 'ไม่สามารถดำเนินการตามร้องขอ กรุณาตรวจสอบอีกครั้ง';
-            this.searchMessage = errMsg;
+            this.searchMessage = 'ไม่สามารถเรียกข้อมูลจากทะเบียนราษฏร์ได้ กรุณาตรวจสอบ Linkage2 Client';
             this.searchMessageType = 'error';
           }
         });
@@ -299,7 +320,7 @@ export class RegisterStudentComponent implements OnInit {
       error: (err) => {
         this.isFetchingPhoto = false;
         console.error('Error fetching photo (linkage2):', err);
-        this.searchMessage = 'ไม่สามารถดึงรูปจาก Linkage2 ได้ กรุณาตรวจสอบอีกครั้ง';
+        this.searchMessage = 'ไม่สามารถเรียกข้อมูลจากทะเบียนราษฏร์ได้ กรุณาตรวจสอบ Linkage2 Client';
         this.searchMessageType = 'error';
       }
     });
@@ -550,15 +571,18 @@ export class RegisterStudentComponent implements OnInit {
       await this.dialogService.alert(`คำเตือน: ${this.form.pid} ${this.personData.titleDesc} ${this.form.fname} ${this.form.lname} ไม่ใช่เชื้อชาติไทย !!!`);
     }
 
-    // ตรวจสอบเกรดเฉลี่ย
-    const grade = parseFloat(this.form.grade);
-    if (isNaN(grade) || grade <= 0 || grade > 4) {
-      await this.dialogService.alert('ท่านกรอกข้อมูลเกรดเฉลี่ยไม่ถูกต้อง !!!\n\nกรุณากรอก เกรดเฉลี่ย ในช่วง 0.01 - 4.00');
-      return;
-    }
-    if (grade < 1) {
-      await this.dialogService.alert('เกรดเฉลี่ยน้อยกว่า 1.00 ไม่สามารถสมัคร นศท.ได้ !!!');
-      return;
+    // ตรวจสอบเกรดเฉลี่ย (ไม่บังคับกรอก; ถ้ากรอก ต้องอยู่ในช่วง 1.00-4.00)
+    const gradeRaw = (this.form.grade ?? '').toString().trim();
+    if (gradeRaw !== '') {
+      const grade = parseFloat(gradeRaw);
+      if (isNaN(grade) || grade <= 0 || grade > 4) {
+        await this.dialogService.alert('ท่านกรอกข้อมูลเกรดเฉลี่ยไม่ถูกต้อง !!!\n\nกรุณากรอก เกรดเฉลี่ย ในช่วง 0.01 - 4.00');
+        return;
+      }
+      if (grade < 1) {
+        await this.dialogService.alert('เกรดเฉลี่ยน้อยกว่า 1.00 ไม่สามารถสมัคร นศท.ได้ !!!');
+        return;
+      }
     }
 
     // ตรวจสอบฐานะครอบครัว
@@ -573,8 +597,22 @@ export class RegisterStudentComponent implements OnInit {
       return;
     }
 
+    // Defense-in-depth: re-copy ค่าจาก personData (LK snapshot) ทับ form
+    // ก่อน submit อีกครั้ง เพื่อไม่ให้ user ที่แก้ form ผ่าน DevTools ส่งค่าปลอมเข้าไป
+    // (field LK ใน template ก็ readonly อยู่แล้ว แต่ระดับ JS memory แก้ได้ ต้อง guard ซ้ำ)
+    this.lockLkFieldsFromPersonData();
+
     this.isSaving = true;
-    this.studentRegisterService.saveStudent(this.form).subscribe({
+    this.studentRegisterService.saveStudent(
+      this.form,
+      this.schoolId,
+      this.currentYear,
+      {
+        photoBase64: this.personData?.photoBase64,
+        photoMimeType: this.personData?.photoMimeType
+      },
+      this.personData?.titleDesc
+    ).subscribe({
       next: async () => {
         this.isSaving = false;
         await this.dialogService.alert('บันทึกข้อมูลผู้สมัคร สำเร็จ');
@@ -588,6 +626,41 @@ export class RegisterStudentComponent implements OnInit {
     });
   }
 
+  /**
+   * Re-populate LK-sourced fields จาก personData ทับ form ก่อน submit
+   * ป้องกันการแก้ค่าผ่าน DevTools (window.ng หรือ direct memory patch)
+   * ยกเว้น field ที่ผู้ใช้กรอกเอง (nationId, relegId, telPerson, telParents, grade,
+   *  fatherLname, fatherJobId, motherLname, motherJobId, faMaStatusId,
+   *  familyWealthId, familyStatusId, armyNote) — ไม่แตะต้อง
+   */
+  private lockLkFieldsFromPersonData(): void {
+    if (!this.personData) return;
+    const p = this.personData;
+    this.form.pid = p.pid;
+    this.form.titleId = p.titleId;
+    this.form.fname = p.fname;
+    this.form.lname = p.lname;
+    this.form.sexId = p.sexId;
+    this.form.birthday = p.birthday;
+    this.form.natId = p.natId;
+    this.form.addrNo = p.addrNo;
+    this.form.addrMoo = p.addrMoo;
+    this.form.trokId = p.trokId;
+    this.form.soiId = p.soiId;
+    this.form.roadId = p.roadId;
+    this.form.districtId = p.districtId;
+    this.form.amphurId = p.amphurId;
+    this.form.provinceCid = p.provinceCid;
+    this.form.houseId = p.houseId;
+    this.form.rCode = p.rCode;
+    this.form.fatherPid = p.fatherPid;
+    this.form.fatherFname = p.fatherName;
+    this.form.fatherNatId = p.fatherNatId;
+    this.form.motherPid = p.motherPid;
+    this.form.motherFname = p.motherName;
+    this.form.motherNatId = p.motherNatId;
+  }
+
   // ยกเลิก (resetPage จาก JSP)
   resetPage(): void {
     this.showForm = false;
@@ -596,7 +669,7 @@ export class RegisterStudentComponent implements OnInit {
     this.searchMessageType = '';
     this.showTransferConfirm = false;
     this.form = this.createEmptyForm();
-    // ไม่ clear searchPid เพื่อให้ค้นหาต่อได้
+    this.searchPid = '';
   }
 
   // รับเฉพาะตัวเลข (จาก checkNumber ใน JSP)
@@ -616,6 +689,19 @@ export class RegisterStudentComponent implements OnInit {
   getSexDisplay(): string {
     if (!this.personData) return '';
     return this.personData.sexId === 'M' ? 'ชาย' : this.personData.sexId === 'F' ? 'หญิง' : '';
+  }
+
+  // ถ้าไม่มีข้อมูล (null, '', '0', '00', ...) ให้แสดงเป็น '-'
+  displayDash(v: any): string {
+    if (v === null || v === undefined) return '-';
+    const s = String(v).trim();
+    if (s === '') return '-';
+    if (/^0+$/.test(s)) return '-';
+    return s;
+  }
+
+  displayMoo(v: any): string {
+    return this.displayDash(v);
   }
 
   getAgeDisplay(): string {

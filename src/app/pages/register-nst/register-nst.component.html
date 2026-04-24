@@ -6,8 +6,8 @@
 
   <div class="subtitle" *ngIf="schoolName">ชื่อสถานศึกษาวิชาทหาร : {{ schoolName }}</div>
 
-  <!-- ค้นหาข้อมูล นศท. (จาก register_nst.jsp) -->
-  <mat-card class="section-card">
+  <!-- ค้นหาข้อมูล นศท. -->
+  <mat-card class="section-card search-card">
     <mat-card-header>
       <mat-icon mat-card-avatar>search</mat-icon>
       <mat-card-title>ค้นหาข้อมูล นศท.</mat-card-title>
@@ -16,18 +16,19 @@
       <div class="form-row">
         <mat-form-field appearance="fill">
           <mat-label>รหัส นศท. (10 หลัก)</mat-label>
-          <input matInput type="text" [(ngModel)]="searchNstId" maxlength="10" (keypress)="onNumberKeyPress($event)" (keyup.enter)="search()" />
+          <input matInput type="text" [(ngModel)]="searchNstId" maxlength="10" (keypress)="onNumberKeyPress($event)"
+            (keyup.enter)="search()" />
         </mat-form-field>
-
+        หรือ
         <mat-form-field appearance="fill">
           <mat-label>เลขประจำตัวประชาชน (13 หลัก)</mat-label>
-          <input matInput type="text" [(ngModel)]="searchNstPid" maxlength="13" (keypress)="onNumberKeyPress($event)" (keyup.enter)="search()" />
+          <input matInput type="text" [(ngModel)]="searchNstPid" maxlength="13" (keypress)="onNumberKeyPress($event)"
+            (keyup.enter)="search()" />
         </mat-form-field>
 
         <div class="search-actions">
           <button mat-flat-button color="primary" (click)="search()" [disabled]="isSearching">
-            <mat-icon *ngIf="!isSearching">search</mat-icon>
-            <mat-spinner *ngIf="isSearching" diameter="18"></mat-spinner>
+            <mat-icon>search</mat-icon>
             ค้นหา
           </button>
         </div>
@@ -38,345 +39,143 @@
   <!-- ข้อความแจ้งผลค้นหา -->
   <mat-card class="message-card" *ngIf="searchResult === 'notfound'">
     <mat-card-content>
-      <div class="message error">ไม่พบข้อมูลที่ท่านต้องการค้นหา!!!</div>
+      <div class="message error">
+        <mat-icon>error_outline</mat-icon>
+        <span>ไม่พบข้อมูลที่ท่านต้องการค้นหา!!!</span>
+      </div>
     </mat-card-content>
   </mat-card>
 
-  <!-- กำลังค้นหา -->
-  <div class="loading" *ngIf="isSearching">
-    <mat-spinner diameter="40"></mat-spinner>
-    <div class="loading-text">กำลังดำเนินการ กรุณาคอย...</div>
+  <!-- Overlay spinner (Material) -->
+  <div class="mat-overlay-spinner" *ngIf="isSearching" role="progressbar" aria-live="polite">
+    <mat-card class="mat-overlay-spinner__panel" appearance="raised">
+      <mat-progress-spinner mode="indeterminate" diameter="56" color="primary"></mat-progress-spinner>
+      <div class="mat-overlay-spinner__text mat-body-1">กำลังดำเนินการ กรุณาคอย...</div>
+    </mat-card>
   </div>
 
-  <!-- ฟอร์มข้อมูล นศท. (inline จาก register_nst.jsp) -->
+  <!-- ฟอร์มข้อมูล นศท. -->
   <div class="nst-form" *ngIf="showForm && nstData">
 
     <!-- ข้อมูลส่วนบุคคล -->
-    <mat-card class="section-card">
+    <mat-card class="section-card profile-card">
       <mat-card-header>
         <mat-icon mat-card-avatar>person</mat-icon>
         <mat-card-title>ข้อมูลส่วนบุคคล</mat-card-title>
+        <mat-card-subtitle>รหัส นศท.: {{ nstData.nstId }} | เลขประจำตัวประชาชน: {{ nstData.regPid }}</mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
-      <table class="form-table">
-      <tr>
-        <td class="td-label">ชื่อ<span class="textred">*</span> :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [value]="nstData.regTitle" class="text-readonly" size="6" readonly>
-          &nbsp;
-          <input type="text" [value]="nstData.regFname" class="text-readonly" size="20" readonly>
-          &nbsp; นามสกุล<span class="textred">*</span> :
-          <input type="text" [value]="nstData.regLname" class="text-readonly" size="20" readonly>
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">เลข ปชช. :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [value]="nstData.regPid" class="text-readonly-blue" size="15" readonly>
-          &nbsp;รหัส นศท. :
-          <input type="text" [value]="nstData.nstId" class="text-readonly-blue" size="10" readonly>
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">สถานศึกษา :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [value]="schoolName" class="text-readonly-blue" size="51" readonly>
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">นศท. ชั้นปีที่<span class="textred">*</span> :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [value]="nstData.nstAtClass" class="text-readonly" size="3" readonly>
-          &nbsp;&nbsp;&nbsp;สถานะ นศท.<span class="textred">*</span> :&nbsp;
-          <mat-form-field appearance="fill" class="inline">
-            <mat-select [(ngModel)]="nstData.nstStatusId">
-              <mat-option value="">-- เลือก --</mat-option>
-              <mat-option *ngFor="let s of nstStatusList" [value]="s.id">{{ s.desc }}</mat-option>
-            </mat-select>
+        <div class="form-grid">
+          <mat-form-field appearance="fill" class="col-2">
+            <mat-label>คำนำหน้า</mat-label>
+            <input matInput [value]="nstData.regTitle" readonly>
           </mat-form-field>
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">วันเดือนปีเกิด :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [value]="nstData.regBirthday" class="text-readonly" size="12" readonly>
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">สัญชาติ<span class="textred">*</span> :</td>
-        <td class="td-value">&nbsp;
-          <mat-form-field appearance="fill" class="inline">
-            <mat-select [(ngModel)]="nstData.regNat">
-              <mat-option value="">-- เลือก --</mat-option>
-              <mat-option *ngFor="let n of natList" [value]="n.desc">{{ n.desc }}</mat-option>
-            </mat-select>
+          <mat-form-field appearance="fill" class="col-4">
+            <mat-label>ชื่อ</mat-label>
+            <input matInput [value]="nstData.regFname" readonly>
           </mat-form-field>
-          &nbsp;&nbsp;&nbsp;&nbsp;เชื้อชาติ :
-          <mat-form-field appearance="fill" class="inline">
-            <mat-select [(ngModel)]="nstData.regNation">
-              <mat-option value="">-- เลือก --</mat-option>
-              <mat-option *ngFor="let n of natList" [value]="n.desc">{{ n.desc }}</mat-option>
-            </mat-select>
+          <mat-form-field appearance="fill" class="col-4">
+            <mat-label>นามสกุล</mat-label>
+            <input matInput [value]="nstData.regLname" readonly>
           </mat-form-field>
-          &nbsp;&nbsp;&nbsp;&nbsp;ศาสนา :
-          <mat-form-field appearance="fill" class="inline">
-            <mat-select [(ngModel)]="nstData.regReleg">
-              <mat-option value="">-- เลือก --</mat-option>
-              <mat-option *ngFor="let r of relegList" [value]="r.desc">{{ r.desc }}</mat-option>
-            </mat-select>
+
+          <mat-form-field appearance="fill" class="col-4">
+            <mat-label>เลขประจำตัวประชาชน</mat-label>
+            <input matInput [value]="nstData.regPid" readonly>
+            <mat-icon matSuffix>badge</mat-icon>
           </mat-form-field>
-        </td>
-      </tr>
-    </table>
+          <mat-form-field appearance="fill" class="col-3">
+            <mat-label>รหัส นศท.</mat-label>
+            <input matInput [value]="nstData.nstId" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="col-3">
+            <mat-label>เพศ</mat-label>
+            <input matInput [value]="getSexDisplay()" readonly>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="col-8">
+            <mat-label>สถานศึกษาวิชาทหาร</mat-label>
+            <input matInput [value]="schoolName" readonly>
+            <mat-icon matSuffix>school</mat-icon>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="col-2">
+            <mat-label>ชั้นปีที่</mat-label>
+            <input matInput [value]="nstData.nstAtClass" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="col-2">
+            <mat-label>ปีการศึกษา</mat-label>
+            <input matInput [value]="nstData.regYear" readonly>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="col-4">
+            <mat-label>สถานะ นศท.</mat-label>
+            <input matInput [value]="getNstStatusDesc()" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="col-3">
+            <mat-label>วันเดือนปีเกิด</mat-label>
+            <input matInput [value]="nstData.regBirthday" readonly>
+            <mat-icon matSuffix>event</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="col-4">
+            <mat-label>สัญชาติ</mat-label>
+            <input matInput [value]="nstData.regNat" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="col-4">
+            <mat-label>เชื้อชาติ</mat-label>
+            <input matInput [value]="nstData.regNation" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="col-4">
+            <mat-label>ศาสนา</mat-label>
+            <input matInput [value]="nstData.regReleg" readonly>
+          </mat-form-field>
+        </div>
       </mat-card-content>
+      <!-- <mat-card-actions align="end">
+        <button mat-stroked-button type="button" (click)="resetPage()">
+          <mat-icon>close</mat-icon>
+          ปิด
+        </button>
+      </mat-card-actions> -->
     </mat-card>
 
-    <!-- ที่อยู่ตามทะเบียนบ้าน -->
-    <table class="form-table">
-      <tr><td colspan="2" class="td-head">&nbsp;ที่อยู่ตามทะเบียนบ้าน<span class="textred">*มหาดไทย</span></td></tr>
-      <tr>
-        <td class="td-label">บ้านเลขที่ :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [(ngModel)]="nstData.regAddr" size="5" maxlength="15">
-          &nbsp;&nbsp;หมู่ที่ :
-          <input type="text" [(ngModel)]="nstData.regMm" size="5" maxlength="2">
-          &nbsp;&nbsp;ถนน :
-          <input type="text" [(ngModel)]="nstData.regThanon" size="25">
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">ตรอก :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [(ngModel)]="nstData.regTrok" size="25">
-          &nbsp;&nbsp;ซอย :
-          <input type="text" [(ngModel)]="nstData.regSoi" size="25">
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">จังหวัด :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [value]="nstData.regProvinceName" class="text-readonly" size="15" readonly>
-          &nbsp;อำเภอ :&nbsp;
-          <input type="text" [value]="nstData.regAmphurName" class="text-readonly" size="15" readonly>
-          &nbsp;ตำบล :&nbsp;
-          <input type="text" [value]="nstData.regDistricName" class="text-readonly" size="15" readonly>
-        </td>
-      </tr>
-    </table>
-
-    <!-- ที่อยู่ที่สามารถติดต่อได้สะดวก -->
-    <table class="form-table">
-      <tr><td colspan="2" class="td-head">&nbsp;ที่อยู่ที่สามารถติดต่อได้สะดวก</td></tr>
-      <tr>
-        <td class="td-label">ที่อยู่ปัจจุบัน บ้านเลขที่ :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [(ngModel)]="nstData.regPresentAddr" size="5" maxlength="15">
-          &nbsp;&nbsp;หมู่ที่ :
-          <input type="text" [(ngModel)]="nstData.regPresentMm" size="5" maxlength="2">
-          &nbsp;&nbsp;ถนน :
-          <input type="text" [(ngModel)]="nstData.regPresentThanon" size="25">
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">ตรอก :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [(ngModel)]="nstData.regPresentTrok" size="25">
-          &nbsp;&nbsp;ซอย :
-          <input type="text" [(ngModel)]="nstData.regPresentSoi" size="25">
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">จังหวัด :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [value]="nstData.regPresentProvinceName" class="text-readonly" size="15" readonly>
-          &nbsp;อำเภอ :&nbsp;
-          <input type="text" [value]="nstData.regPresentAmphurName" class="text-readonly" size="15" readonly>
-          &nbsp;ตำบล :&nbsp;
-          <input type="text" [value]="nstData.regPresentDistricName" class="text-readonly" size="15" readonly>
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">เบอร์โทรศัพท์ :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [(ngModel)]="nstData.regPhone" size="20" maxlength="11"
-                 (keypress)="onNumberKeyPress($event)">
-          &nbsp;E - Mail Address :
-          <input type="text" [(ngModel)]="nstData.regEmail" size="30">
-        </td>
-      </tr>
-    </table>
-
-    <!-- ภูมิลำเนาทหาร -->
-    <table class="form-table">
-      <tr><td colspan="2" class="td-head">&nbsp;ภูมิลำเนาทหาร</td></tr>
-      <tr>
-        <td class="td-label">ภูมิลำเนาทหาร :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [value]="nstData.sdMaddr" class="text-readonly-blue" size="5" readonly>
-          &nbsp;&nbsp;หมู่ที่ :
-          <input type="text" [value]="nstData.sdMvillage" class="text-readonly-blue" size="5" readonly>
-          &nbsp;&nbsp;ถนน :
-          <input type="text" [value]="nstData.sdMroad" class="text-readonly-blue" size="25" readonly>
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">ตรอก :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [value]="nstData.sdMtrok" class="text-readonly-blue" size="25" readonly>
-          &nbsp;&nbsp;ซอย :
-          <input type="text" [value]="nstData.sdMsoi" class="text-readonly-blue" size="25" readonly>
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">จังหวัด :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [value]="nstData.sdProvinceMidName" class="text-readonly-blue" size="15" readonly>
-          &nbsp;อำเภอ :&nbsp;
-          <input type="text" [value]="nstData.sdMamphurName" class="text-readonly-blue" size="15" readonly>
-          &nbsp;ตำบล :&nbsp;
-          <input type="text" [value]="nstData.sdMdistricName" class="text-readonly-blue" size="15" readonly>
-        </td>
-      </tr>
-    </table>
-
-    <!-- แสดงข้อมูลบิดา -->
-    <table class="form-table">
-      <tr><td colspan="2" class="td-head">&nbsp;แสดงข้อมูลบิดา</td></tr>
-      <tr>
-        <td class="td-label">ชื่อบิดา :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [(ngModel)]="nstData.regFaFname" size="20">
-          นามสกุล :
-          <input type="text" [(ngModel)]="nstData.regFaLname" size="20">
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">อาชีพ :</td>
-        <td class="td-value">&nbsp;
-          <select [(ngModel)]="nstData.regFaJob">
-            <option value="">--เลือก--</option>
-            <option *ngFor="let emp of employmentList" [value]="emp.desc">{{ emp.desc }}</option>
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">สถานที่ทำงาน :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [(ngModel)]="nstData.regFaJobAddr" size="20">
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">จังหวัด :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [value]="nstData.regFaJobProvinceName" class="text-readonly" size="15" readonly>
-          &nbsp;อำเภอ :&nbsp;
-          <input type="text" [value]="nstData.regFaJobAmphurName" class="text-readonly" size="15" readonly>
-          &nbsp;ตำบล :&nbsp;
-          <input type="text" [value]="nstData.regFaJobDistricName" class="text-readonly" size="15" readonly>
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">ที่อยู่ปัจจุบัน บ้านเลขที่ :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [(ngModel)]="nstData.regFaAddr" size="20">
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">จังหวัด :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [value]="nstData.regFaProvinceName" class="text-readonly" size="15" readonly>
-          &nbsp;อำเภอ :&nbsp;
-          <input type="text" [value]="nstData.regFaAmphurName" class="text-readonly" size="15" readonly>
-          &nbsp;ตำบล :&nbsp;
-          <input type="text" [value]="nstData.regFaDistricName" class="text-readonly" size="15" readonly>
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">เบอร์โทรศัพท์ :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [(ngModel)]="nstData.regFaPhone" size="20" maxlength="11"
-                 (keypress)="onNumberKeyPress($event)">
-          &nbsp;&nbsp;สถานะบิดา :
-          <label>
-            <input type="checkbox" [checked]="nstData.regFamaStatus === 'บิดาเสียชีวิต'"
-                   (change)="nstData.regFamaStatus = $any($event.target).checked ? 'บิดาเสียชีวิต' : ''">
-            บิดาเสียชีวิต
-          </label>
-        </td>
-      </tr>
-    </table>
-
-    <!-- แสดงข้อมูลมารดา -->
-    <table class="form-table">
-      <tr><td colspan="2" class="td-head">&nbsp;แสดงข้อมูลมารดา</td></tr>
-      <tr>
-        <td class="td-label">ชื่อมารดา :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [(ngModel)]="nstData.regMaFname" size="20">
-          นามสกุล :
-          <input type="text" [(ngModel)]="nstData.regMaLname" size="20">
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">อาชีพ :</td>
-        <td class="td-value">&nbsp;
-          <select [(ngModel)]="nstData.regMaJob">
-            <option value="">-- เลือก --</option>
-            <option *ngFor="let emp of employmentList" [value]="emp.desc">{{ emp.desc }}</option>
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">สถานที่ทำงาน :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [(ngModel)]="nstData.regMaJobAddr" size="20">
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">จังหวัด :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [value]="nstData.regMaJobProvinceName" class="text-readonly" size="15" readonly>
-          &nbsp;อำเภอ :&nbsp;
-          <input type="text" [value]="nstData.regMaJobAmphurName" class="text-readonly" size="15" readonly>
-          &nbsp;ตำบล :&nbsp;
-          <input type="text" [value]="nstData.regMaJobDistricName" class="text-readonly" size="15" readonly>
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">ที่อยู่ปัจจุบัน บ้านเลขที่ :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [(ngModel)]="nstData.regMaAddr" size="20">
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">จังหวัด :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [value]="nstData.regMaProvinceName" class="text-readonly" size="15" readonly>
-          &nbsp;อำเภอ :&nbsp;
-          <input type="text" [value]="nstData.regMaAmphurName" class="text-readonly" size="15" readonly>
-          &nbsp;ตำบล :&nbsp;
-          <input type="text" [value]="nstData.regMaDistricName" class="text-readonly" size="15" readonly>
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">เบอร์โทรศัพท์ :</td>
-        <td class="td-value">&nbsp;
-          <input type="text" [(ngModel)]="nstData.regMaPhone" size="20" maxlength="11"
-                 (keypress)="onNumberKeyPress($event)">
-        </td>
-      </tr>
-      <tr>
-        <td class="td-label">&nbsp;</td>
-        <td class="td-value">&nbsp;
-          <button mat-flat-button color="primary" (click)="saveForm()" [disabled]="isSaving">
-            <mat-icon>save</mat-icon>
-            {{ isSaving ? 'กำลังบันทึก...' : 'บันทึก' }}
-          </button>
-          &nbsp;
-          <button mat-button (click)="resetPage()">ปิด</button>
-        </td>
-      </tr>
-    </table>
+    <mat-card class="section-card history-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>history</mat-icon>
+        <mat-card-title>ประวัติสถานะ นศท. (SIA_NST_STATUS)</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="history-table-wrap" *ngIf="statusHistoryRows.length > 0; else noHistory">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>ลำดับ</th>
+                <th>ปีการศึกษา</th>
+                <th>ชั้นปีที่</th>
+                <th>สถานะ นศท.</th>
+                <th>สถานศึกษาฯ</th>
+                <th>วันที่บันทึกสถานะ</th>
+                <th>หมายเหตุ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of statusHistoryRows">
+                <td>{{ r.runningNumber }}</td>
+                <td>{{ r.atYear }}</td>
+                <td>{{ r.nstAtClass }}</td>
+                <td>{{ r.nstStatusDesc }}</td>
+                <td>{{ r.schoolShortName }}</td>
+                <td>{{ r.updateDateThai }}</td>
+                <td>{{ r.note }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noHistory>
+          <div class="history-empty">ไม่พบข้อมูลประวัติสถานะ</div>
+        </ng-template>
+      </mat-card-content>
+    </mat-card>
 
   </div>
 </div>

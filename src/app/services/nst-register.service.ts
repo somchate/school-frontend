@@ -69,8 +69,9 @@ export class NstRegisterService {
   }
 
   // นำ นศท. ออกจากรายงานตัว (ย้ายจากขวาไปซ้าย)
-  removeFromReq(pids: string[], nstStatus: string, atClass: string, sex: string): Observable<any> {
-    return this.http.post(`${this.API_URL}/nst/req/remove`, { pids, nstStatus, atClass, sex });
+  // nstReqList = ["pid_statusId", ...] เหมือน NstReqList ของ JSP legacy
+  removeFromReq(nstReqList: string[], atClass: string, sex: string): Observable<any> {
+    return this.http.post(`${this.API_URL}/nst/req/remove`, { nstReqList, atClass, sex });
   }
 
   // ค้นหา นศท. โอนย้ายเข้า
@@ -91,11 +92,11 @@ export class NstRegisterService {
   }
 
   // ค้นหาข้อมูล นศท. แบบละเอียด (จาก register_nst.jsp)
-  searchNstDetail(pid: string, nstId: string, schoolId: string): Observable<NstDetailData> {
+  // ไม่ใช้ schoolId เป็นเงื่อนไข (ตาม requirement)
+  searchNstDetail(pid: string, nstId: string): Observable<NstDetailData> {
     let params = new HttpParams();
     if (pid) params = params.set('pid', pid);
     if (nstId) params = params.set('nstId', nstId);
-    if (schoolId) params = params.set('schoolId', schoolId);
     return this.http.get<NstDetailData>(`${this.API_URL}/nst/detail`, { params });
   }
 
@@ -120,11 +121,36 @@ export class NstRegisterService {
   getEmploymentList(): Observable<LookupItem[]> {
     return this.http.get<LookupItem[]>(`${this.API_URL}/lookup/employment`);
   }
+
+  getProvinceList(): Observable<LookupItem[]> {
+    return this.http.get<LookupItem[]>(`${this.API_URL}/lookup/province`);
+  }
+
+  getSchoolList(): Observable<SchoolOption[]> {
+    return this.http.get<SchoolOption[]>(`${this.API_URL}/school/list`);
+  }
 }
 
 export interface LookupItem {
   id: string;
   desc: string;
+}
+
+export interface SchoolOption {
+  schoolId: string;
+  schoolName: string;
+  schoolShortName: string;
+  provinceCid: string;
+}
+
+export interface NstStatusHistoryItem {
+  runningNumber: number;
+  atYear: string;
+  nstAtClass: string;
+  nstStatusDesc: string;
+  schoolShortName: string;
+  updateDateThai: string;
+  note: string;
 }
 
 // ข้อมูล นศท. แบบละเอียด (จาก register_nst.jsp)
@@ -140,6 +166,7 @@ export interface NstDetailData {
   regSex: string;
   regBirthday: string;
   nstAtClass: string;
+  regYear: string;
   nstStatusId: string;
   regNat: string;
   regNation: string;
@@ -221,4 +248,5 @@ export interface NstDetailData {
   regMaDistricId: string;
   regMaDistricName: string;
   regMaPhone: string;
+  statusHistory?: NstStatusHistoryItem[];
 }

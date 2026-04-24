@@ -38,6 +38,19 @@ export class AuthService {
       );
   }
 
+  thaidLogin(pid: string, token?: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.API_URL}/auth/thaid-login`, { pid, token: token || '' })
+      .pipe(
+        tap(response => {
+          if (response.success && response.token && response.user) {
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('currentUser', JSON.stringify(response.user));
+            this.currentUserSubject.next(response.user);
+          }
+        })
+      );
+  }
+
   // ออกจากระบบ (จาก logout.jsp: processLogout → invalidate session → redirect login)
   logout(): void {
     const token = this.getToken();

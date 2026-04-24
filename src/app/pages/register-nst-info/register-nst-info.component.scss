@@ -30,18 +30,23 @@
   justify-content: center;
 }
 
-.loading {
+.page-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(255, 255, 255, 0.72);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 28px 0;
+  gap: 16px;
+  backdrop-filter: blur(2px);
 }
 
-.loading-text {
-  color: #64748b;
-  font-size: 14px;
+.overlay-text {
+  color: #006241;
+  font-size: 15px;
+  font-weight: 500;
 }
 
 .ff-small {
@@ -52,10 +57,38 @@
   width: min(520px, 100%);
 }
 
+.ff-full {
+  width: 100%;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+
+  mat-form-field {
+    flex: 1 1 200px;
+    min-width: 180px;
+  }
+
+  .search-button {
+    height: 56px;
+    align-self: flex-start;
+    white-space: nowrap;
+  }
+}
+
 .search-actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .filter-row .search-button {
+    width: 100%;
+  }
 }
 
 .clickable {
@@ -122,6 +155,44 @@
   width: 100%;
 }
 
+.input-search-icon {
+  color: #94a3b8;
+  font-size: 18px;
+  margin-right: 4px;
+}
+
+::ng-deep .select-search-option {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fff !important;
+  border-bottom: 1px solid #e2e8f0;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 6px 12px !important;
+  cursor: default;
+
+  .mat-option-text {
+    display: flex;
+    align-items: center;
+  }
+
+  .select-search-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    padding: 4px 0;
+    font-size: 14px;
+    background: transparent;
+    color: #0f172a;
+    font-family: inherit;
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+  }
+}
+
 // 2-list layout (จาก register_nst_info.jsp)
 .two-list-layout {
   display: flex;
@@ -156,6 +227,13 @@
 
 .arrow-btn {
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.10);
+}
+
+.arrow-btn[disabled],
+.arrow-btn.mat-mdc-fab-disabled {
+  box-shadow: none;
+  background: #e5e7eb !important;
+  color: #9ca3af !important;
 }
 
 .action-buttons-vertical {
@@ -294,6 +372,12 @@
   text-align: center;
   color: #999;
   font-size: 13px;
+}
+
+.list-loading {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
 }
 
 // Transfer section

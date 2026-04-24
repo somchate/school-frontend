@@ -1,19 +1,39 @@
 <div class="page-container">
   <div class="page-title">
     <mat-icon>school</mat-icon>
-    <span>ข้อมูลสถานศึกษาฯ / ผกท.</span>
+    <span>ข้อมูลสถานศึกษาฯ</span>
   </div>
+
+  <mat-card class="hero-card">
+    <mat-card-content>
+      <div class="hero">
+        <div class="hero-title">ระบบงานทะเบียนพล นศท.</div>
+        <div class="hero-subtitle">หน่วยบัญชาการรักษาดินแดน</div>
+        <div class="hero-meta">
+          <div class="pill" *ngIf="schoolData.schoolName">
+            <mat-icon>school</mat-icon>
+            <span>{{ schoolData.schoolName }}</span>
+          </div>
+          <div class="pill" *ngIf="currentYear">
+            <mat-icon>calendar_today</mat-icon>
+            <span>ปีการศึกษา {{ currentYear }}</span>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
 
   <div *ngIf="isLoading" class="loading">
     <mat-spinner diameter="40"></mat-spinner>
     <div class="loading-text">กำลังโหลดข้อมูล...</div>
   </div>
 
-  <div *ngIf="!isLoading" class="grid">
+  <div *ngIf="!isLoading">
     <mat-card class="section-card">
       <mat-card-header>
         <mat-icon mat-card-avatar>domain</mat-icon>
         <mat-card-title>ข้อมูลสถานศึกษา</mat-card-title>
+        <mat-card-subtitle>รายละเอียดและผู้ให้คำรับรอง</mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
         <div class="kv-grid">
@@ -34,39 +54,59 @@
             <div class="v">{{ formatThaiDate(schoolData.openDate) }}</div>
           </div>
         </div>
-      </mat-card-content>
-    </mat-card>
 
-    <mat-card class="section-card">
-      <mat-card-header>
-        <mat-icon mat-card-avatar>info</mat-icon>
-        <mat-card-title>ข้อมูลแจ้งเตือน / Inform</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div *ngIf="!isEditing" class="inform-view">
-          <div class="inform-text" *ngIf="schoolData.inform; else noInform">{{ schoolData.inform }}</div>
-          <ng-template #noInform>
-            <div class="empty">ไม่มีข้อมูล</div>
-          </ng-template>
+        <mat-divider class="divider"></mat-divider>
+
+        <div class="subsection-title">ผู้ให้คำรับรองของสถานศึกษา</div>
+
+        <div *ngIf="!isEditingCertifier" class="certifier-view">
+          <div class="kv-grid">
+            <div class="kv">
+              <div class="k">ชื่อ</div>
+              <div class="v">{{ certifierData.fname || '-' }}</div>
+            </div>
+            <div class="kv">
+              <div class="k">นามสกุล</div>
+              <div class="v">{{ certifierData.lname || '-' }}</div>
+            </div>
+            <div class="kv kv-full">
+              <div class="k">ตำแหน่ง</div>
+              <div class="v">{{ certifierData.position || '-' }}</div>
+            </div>
+          </div>
           <div class="action-row">
-            <button mat-stroked-button color="primary" (click)="isEditing = true">
+            <button mat-stroked-button color="primary" (click)="isEditingCertifier = true">
               <mat-icon>edit</mat-icon>
               แก้ไข
             </button>
           </div>
         </div>
 
-        <div *ngIf="isEditing" class="inform-edit">
-          <mat-form-field appearance="fill">
-            <mat-label>Inform</mat-label>
-            <textarea matInput [(ngModel)]="schoolData.inform" rows="5"></textarea>
-          </mat-form-field>
+        <div *ngIf="isEditingCertifier" class="certifier-edit">
+          <div class="form-grid">
+            <mat-form-field appearance="fill">
+              <mat-label>ชื่อ</mat-label>
+              <input matInput [(ngModel)]="certifierData.fname" maxlength="100" />
+            </mat-form-field>
+            <mat-form-field appearance="fill">
+              <mat-label>นามสกุล</mat-label>
+              <input matInput [(ngModel)]="certifierData.lname" maxlength="100" />
+            </mat-form-field>
+            <mat-form-field appearance="fill" class="form-full">
+              <mat-label>ตำแหน่ง</mat-label>
+              <input matInput [(ngModel)]="certifierData.position" maxlength="200" />
+            </mat-form-field>
+          </div>
           <div class="action-row">
-            <button mat-flat-button color="primary" (click)="saveInform()">
+            <button mat-flat-button color="primary"
+                    [disabled]="isSavingCertifier"
+                    (click)="saveCertifier()">
               <mat-icon>save</mat-icon>
               บันทึก
             </button>
-            <button mat-button (click)="cancelEdit()">ยกเลิก</button>
+            <button mat-button
+                    [disabled]="isSavingCertifier"
+                    (click)="cancelCertifierEdit()">ยกเลิก</button>
           </div>
         </div>
       </mat-card-content>
@@ -75,139 +115,61 @@
 
   <mat-card class="section-card" *ngIf="!isLoading">
     <mat-card-header>
-      <mat-icon mat-card-avatar>groups</mat-icon>
-      <mat-card-title>รายชื่อผู้กำกับ นศท. และผู้แทนสถานศึกษาฯ</mat-card-title>
+      <mat-icon mat-card-avatar>event</mat-icon>
+      <mat-card-title>กำหนดวันและสถานที่ รับสมัคร / รายงานตัว</mat-card-title>
+      <mat-card-subtitle>ตารางการดำเนินการของสถานศึกษา</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <div class="desc">
-        1) ผกท.พ. / ผกท.
+      <div class="table-container" *ngIf="schedules.length > 0">
+        <table mat-table [dataSource]="schedules" class="schedule-table">
+          <ng-container matColumnDef="index">
+            <th mat-header-cell *matHeaderCellDef>ลำดับ</th>
+            <td mat-cell *matCellDef="let row; let i = index">{{ i + 1 }}</td>
+          </ng-container>
+          <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef>ประเภท</th>
+            <td mat-cell *matCellDef="let row">{{ row.type }}</td>
+          </ng-container>
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef>วันที่</th>
+            <td mat-cell *matCellDef="let row">{{ row.date }}</td>
+          </ng-container>
+          <ng-container matColumnDef="time">
+            <th mat-header-cell *matHeaderCellDef>เวลา</th>
+            <td mat-cell *matCellDef="let row">{{ row.time }}</td>
+          </ng-container>
+          <ng-container matColumnDef="place">
+            <th mat-header-cell *matHeaderCellDef>สถานที่</th>
+            <td mat-cell *matCellDef="let row">{{ row.place }}</td>
+          </ng-container>
+          <ng-container matColumnDef="note">
+            <th mat-header-cell *matHeaderCellDef>หมายเหตุ</th>
+            <td mat-cell *matCellDef="let row">{{ row.note }}</td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="['index','type','date','time','place','note']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['index','type','date','time','place','note'];"></tr>
+        </table>
       </div>
 
-      <div class="subsection">
-        <div class="subsection-title">1.1 ผกท.พ.</div>
-        <div class="empty-state" *ngIf="inspectorM0.length === 0">
-          <mat-icon>person_off</mat-icon>
-          <div>--- ไม่พบรายการ ---</div>
-        </div>
-        <div class="table-container" *ngIf="inspectorM0.length > 0">
-          <table mat-table [dataSource]="inspectorM0" class="mat-table-compact">
-            <ng-container matColumnDef="idx">
-              <th mat-header-cell *matHeaderCellDef>ลำดับ</th>
-              <td mat-cell *matCellDef="let row; let i = index">1.1.{{ i + 1 }}</td>
-            </ng-container>
-            <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>ชื่อ-นามสกุล</th>
-              <td mat-cell *matCellDef="let row">{{ getFullName(row) }}</td>
-            </ng-container>
-            <ng-container matColumnDef="pid">
-              <th mat-header-cell *matHeaderCellDef>เลข ปชช.</th>
-              <td mat-cell *matCellDef="let row">{{ maskPid(row.inspectorId) }}</td>
-            </ng-container>
-            <ng-container matColumnDef="last">
-              <th mat-header-cell *matHeaderCellDef>เข้าใช้งานล่าสุด</th>
-              <td mat-cell *matCellDef="let row">{{ formatThaiDate(row.loginDate) }}</td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="['idx','name','pid','last']"></tr>
-            <tr mat-row *matRowDef="let row; columns: ['idx','name','pid','last'];"></tr>
-          </table>
-        </div>
-      </div>
-
-      <div class="subsection">
-        <div class="subsection-title">1.2 ผกท.</div>
-        <div class="empty-state" *ngIf="inspectorM1.length === 0">
-          <mat-icon>person_off</mat-icon>
-          <div>--- ไม่พบรายการ ---</div>
-        </div>
-        <div class="table-container" *ngIf="inspectorM1.length > 0">
-          <table mat-table [dataSource]="inspectorM1" class="mat-table-compact">
-            <ng-container matColumnDef="idx">
-              <th mat-header-cell *matHeaderCellDef>ลำดับ</th>
-              <td mat-cell *matCellDef="let row; let i = index">1.2.{{ i + 1 }}</td>
-            </ng-container>
-            <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>ชื่อ-นามสกุล</th>
-              <td mat-cell *matCellDef="let row">{{ getFullName(row) }}</td>
-            </ng-container>
-            <ng-container matColumnDef="pid">
-              <th mat-header-cell *matHeaderCellDef>เลข ปชช.</th>
-              <td mat-cell *matCellDef="let row">{{ maskPid(row.inspectorId) }}</td>
-            </ng-container>
-            <ng-container matColumnDef="last">
-              <th mat-header-cell *matHeaderCellDef>เข้าใช้งานล่าสุด</th>
-              <td mat-cell *matCellDef="let row">{{ formatThaiDate(row.loginDate) }}</td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="['idx','name','pid','last']"></tr>
-            <tr mat-row *matRowDef="let row; columns: ['idx','name','pid','last'];"></tr>
-          </table>
-        </div>
-      </div>
-
-      <mat-divider class="divider"></mat-divider>
-
-      <div class="desc">
-        2) เจ้าหน้าที่
-      </div>
-
-      <div class="subsection">
-        <div class="subsection-title">2.1 ผ่านการฝึกแล้ว แต่ยังไม่ได้แต่งตั้ง</div>
-        <div class="empty-state" *ngIf="inspectorTrained.length === 0">
-          <mat-icon>person_off</mat-icon>
-          <div>--- ไม่พบรายการ ---</div>
-        </div>
-        <div class="table-container" *ngIf="inspectorTrained.length > 0">
-          <table mat-table [dataSource]="inspectorTrained" class="mat-table-compact">
-            <ng-container matColumnDef="idx">
-              <th mat-header-cell *matHeaderCellDef>ลำดับ</th>
-              <td mat-cell *matCellDef="let row; let i = index">2.1.{{ i + 1 }}</td>
-            </ng-container>
-            <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>ชื่อ-นามสกุล</th>
-              <td mat-cell *matCellDef="let row">{{ getFullName(row) }}</td>
-            </ng-container>
-            <ng-container matColumnDef="pid">
-              <th mat-header-cell *matHeaderCellDef>เลข ปชช.</th>
-              <td mat-cell *matCellDef="let row">{{ maskPid(row.inspectorId) }}</td>
-            </ng-container>
-            <ng-container matColumnDef="last">
-              <th mat-header-cell *matHeaderCellDef>เข้าใช้งานล่าสุด</th>
-              <td mat-cell *matCellDef="let row">{{ formatThaiDate(row.loginDate) }}</td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="['idx','name','pid','last']"></tr>
-            <tr mat-row *matRowDef="let row; columns: ['idx','name','pid','last'];"></tr>
-          </table>
-        </div>
-      </div>
-
-      <div class="subsection">
-        <div class="subsection-title">2.2 ผู้แทนสถานศึกษาฯ</div>
-        <div class="empty-state" *ngIf="inspectorOther.length === 0">
-          <mat-icon>person_off</mat-icon>
-          <div>--- ไม่พบรายการ ---</div>
-        </div>
-        <div class="table-container" *ngIf="inspectorOther.length > 0">
-          <table mat-table [dataSource]="inspectorOther" class="mat-table-compact">
-            <ng-container matColumnDef="idx">
-              <th mat-header-cell *matHeaderCellDef>ลำดับ</th>
-              <td mat-cell *matCellDef="let row; let i = index">2.2.{{ i + 1 }}</td>
-            </ng-container>
-            <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>ชื่อ-นามสกุล</th>
-              <td mat-cell *matCellDef="let row">{{ getFullName(row) }}</td>
-            </ng-container>
-            <ng-container matColumnDef="pid">
-              <th mat-header-cell *matHeaderCellDef>เลข ปชช.</th>
-              <td mat-cell *matCellDef="let row">{{ maskPid(row.inspectorId) }}</td>
-            </ng-container>
-            <ng-container matColumnDef="last">
-              <th mat-header-cell *matHeaderCellDef>เข้าใช้งานล่าสุด</th>
-              <td mat-cell *matCellDef="let row">{{ formatThaiDate(row.loginDate) }}</td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="['idx','name','pid','last']"></tr>
-            <tr mat-row *matRowDef="let row; columns: ['idx','name','pid','last'];"></tr>
-          </table>
-        </div>
+      <div *ngIf="schedules.length === 0" class="empty-state">
+        <mat-icon>event_busy</mat-icon>
+        <div>ยังไม่มีข้อมูลกำหนดการ</div>
       </div>
     </mat-card-content>
   </mat-card>
+
+  <mat-card class="section-card address-card" *ngIf="!isLoading && schoolData.address">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>location_on</mat-icon>
+      <mat-card-title>ที่ตั้งสถานศึกษาวิชาทหาร</mat-card-title>
+      <mat-card-subtitle>ที่อยู่สำหรับการติดต่อ</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="address">
+        <mat-icon class="address-icon">place</mat-icon>
+        <span>{{ schoolData.address }}</span>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
 </div>

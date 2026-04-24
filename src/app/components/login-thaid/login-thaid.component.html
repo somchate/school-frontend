@@ -1,0 +1,90 @@
+<div class="login-wrapper">
+  <div class="login-header">
+    <div class="header-content">
+      <img src="tdc.png" width="50" alt="TDC Logo" class="logo">
+      <div class="header-text">
+        <h1>ระบบงานทะเบียนพล นศท.</h1>
+        <p class="subtitle">หน่วยบัญชาการรักษาดินแดน (ส่วนงานสถานศึกษาวิชาทหาร)</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="error-container" *ngIf="errorMessage">
+    <mat-card class="error-card">
+      <mat-icon>error</mat-icon>
+      <span>{{ errorMessage }}</span>
+    </mat-card>
+  </div>
+
+  <div class="cards-container">
+    <mat-card class="login-card single-card">
+      <mat-card-header>
+        <div class="card-icon thaid-icon">
+          <mat-icon>smartphone</mat-icon>
+        </div>
+        <mat-card-title>เข้าสู่ระบบด้วย ThaiD</mat-card-title>
+        <mat-card-subtitle>ยืนยันตัวตนผ่านแอปพลิเคชัน ThaiD</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="thaid-status-panel">
+          <div class="thaid-status-icon" [class.loading]="loading">
+            <mat-icon>{{ loading ? 'autorenew' : 'qr_code_scanner' }}</mat-icon>
+          </div>
+          <p class="thaid-status-text">{{ thaiDStatusMessage }}</p>
+        </div>
+
+        <form (ngSubmit)="submit()" class="login-form">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>เลขประจำตัวประชาชน</mat-label>
+            <input
+              matInput
+              type="text"
+              [(ngModel)]="citizenId"
+              name="citizenId"
+              maxlength="13"
+              (keypress)="onlyDigits($event)"
+              [disabled]="loading"
+              required>
+            <mat-icon matPrefix>badge</mat-icon>
+            <mat-hint>13 หลัก</mat-hint>
+          </mat-form-field>
+
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            class="full-width login-button"
+            [disabled]="loading || isFormIncomplete">
+            <mat-icon *ngIf="!loading">login</mat-icon>
+            <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+            <span>{{ loading ? 'กำลังตรวจสอบ...' : 'เข้าสู่ระบบ' }}</span>
+          </button>
+
+          <button
+            mat-stroked-button
+            type="button"
+            class="full-width thaid-signin-button"
+            [disabled]="loading"
+            (click)="startThaiDSignIn()">
+            <mat-icon>qr_code_2</mat-icon>
+            <span>เปิดแอป ThaiD / สแกน QR Code</span>
+          </button>
+        </form>
+      </mat-card-content>
+
+      <mat-card-footer>
+        <div class="footer-content">
+          <span class="footer-toggle-text" (click)="backToLogin()">
+            <mat-icon>arrow_back</mat-icon>
+            กลับไปหน้าเข้าสู่ระบบ
+          </span>
+        </div>
+      </mat-card-footer>
+    </mat-card>
+  </div>
+
+  <div class="footer-info">
+    <p class="copyright">© 2024 Territorial Defense Command. All rights reserved.</p>
+  </div>
+</div>

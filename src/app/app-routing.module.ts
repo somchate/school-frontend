@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
+import { LoginThaidComponent } from './components/login-thaid/login-thaid.component';
 import { MainLayoutComponent } from './components/layout/main-layout/main-layout.component';
-import { WelcomeComponent } from './pages/welcome/welcome.component';
 import { SchoolInfoComponent } from './pages/school-info/school-info.component';
 import { RegisterStudentComponent } from './pages/register-student/register-student.component';
 import { RegisterNstInfoComponent } from './pages/register-nst-info/register-nst-info.component';
@@ -17,12 +17,13 @@ import { AuthGuard } from './guards/auth.guard';
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
+  { path: 'login-thaid', component: LoginThaidComponent },
   { 
     path: '', 
     component: MainLayoutComponent,
     canActivate: [AuthGuard],
     children: [
-      { path: 'welcome', component: WelcomeComponent },
+      { path: 'welcome', redirectTo: 'school-info', pathMatch: 'full' },
       { path: 'school-info', component: SchoolInfoComponent },
       { path: 'register-student', component: RegisterStudentComponent },
       { path: 'register-nst-info', component: RegisterNstInfoComponent },

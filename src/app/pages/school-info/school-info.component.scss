@@ -1,41 +1,163 @@
+// ---------- tokens ----------
+$brand: #006241;
+$brand-dark: #00492f;
+$brand-light: rgba(0, 98, 65, 0.08);
+$ink: #0f172a;
+$muted: #475569;
+$subtle: #64748b;
+$border: #e5eae7;
+$bg-soft: #f8faf9;
+
+// ---------- page ----------
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 22px;
+  font-weight: 800;
+  color: $ink;
+  margin-bottom: 20px;
+
+  mat-icon {
+    color: $brand;
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+  }
+}
+
+// ---------- hero ----------
+.hero-card {
+  margin-bottom: 24px;
+  border: none !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+  background: linear-gradient(135deg, $brand 0%, $brand-dark 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 30px rgba(0, 73, 47, 0.25) !important;
+
+  ::ng-deep .mat-mdc-card-content {
+    padding: 28px 32px !important;
+  }
+}
+
+.hero-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.2px;
+  margin-bottom: 4px;
+}
+
+.hero-subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 18px;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 13px;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+
+  mat-icon {
+    color: #ffffff;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+// ---------- loading ----------
 .loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 48px 0;
+  padding: 64px 0;
 }
 
 .loading-text {
-  color: #64748b;
+  color: $subtle;
   font-size: 14px;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
+// ---------- section card ----------
 .section-card {
-  mat-card-header {
-    mat-icon[mat-card-avatar] {
-      background: rgba(0, 98, 65, 0.12);
-      color: #006241;
-      border-radius: 12px;
-      padding: 8px;
-      font-size: 22px;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+  border-radius: 14px !important;
+  border: 1px solid $border !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.06) !important;
+  background: #ffffff !important;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  + .section-card {
+    margin-top: 20px;
+  }
+
+  ::ng-deep .mat-mdc-card-header {
+    padding: 20px 24px 12px !important;
+    border-bottom: 1px solid $border;
+    background: linear-gradient(to bottom, #fafcfb, #ffffff);
+  }
+
+  ::ng-deep .mat-mdc-card-content {
+    padding: 20px 24px 24px !important;
+  }
+
+  ::ng-deep .mat-mdc-card-title {
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    color: $ink !important;
+    letter-spacing: 0.1px;
+  }
+
+  ::ng-deep .mat-mdc-card-subtitle {
+    font-size: 12px !important;
+    color: $subtle !important;
+    margin-top: 2px !important;
+  }
+
+  mat-icon[mat-card-avatar] {
+    background: $brand-light;
+    color: $brand;
+    border-radius: 10px;
+    padding: 8px;
+    font-size: 22px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
+// ---------- key-value grid ----------
 .kv-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -43,83 +165,214 @@
 }
 
 .kv {
-  padding: 12px;
-  border: 1px solid #e7ece9;
-  border-radius: 12px;
-  background: #ffffff;
+  padding: 12px 14px;
+  border: 1px solid $border;
+  border-radius: 10px;
+  background: $bg-soft;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    border-color: rgba(0, 98, 65, 0.3);
+    background: #ffffff;
+  }
 }
 
 .k {
-  font-size: 12px;
-  color: #64748b;
-  margin-bottom: 6px;
+  font-size: 11px;
+  color: $subtle;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+  margin-bottom: 4px;
 }
 
 .v {
   font-size: 14px;
-  font-weight: 700;
-  color: #0f172a;
+  font-weight: 600;
+  color: $ink;
   word-break: break-word;
 }
 
-.inform-text {
-  white-space: pre-line;
-  color: #334155;
-  line-height: 1.7;
-  padding: 10px 0;
+.kv-full {
+  grid-column: 1 / -1;
+}
+
+// ---------- subsections ----------
+.divider {
+  margin: 20px 0 !important;
+  border-top-color: $border !important;
+}
+
+.subsection-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: $ink;
+  font-size: 14px;
+  margin: 4px 0 14px;
+  padding-left: 10px;
+  border-left: 3px solid $brand;
+}
+
+.certifier-view,
+.certifier-edit {
+  margin-top: 4px;
+}
+
+// ---------- action row ----------
+.action-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+
+  button {
+    font-weight: 600;
+  }
+}
+
+// ---------- forms ----------
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 4px;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.form-full {
+  grid-column: 1 / -1;
+}
+
+// ---------- table ----------
+.table-container {
+  border: 1px solid $border;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.schedule-table {
+  width: 100%;
+  background: #ffffff;
+
+  ::ng-deep {
+    .mat-mdc-header-row {
+      background: $bg-soft;
+    }
+
+    .mat-mdc-header-cell {
+      font-weight: 700 !important;
+      color: $ink !important;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid $border !important;
+    }
+
+    .mat-mdc-cell {
+      color: #1e293b;
+      font-size: 13px;
+      border-bottom: 1px solid #f1f5f4 !important;
+    }
+
+    .mat-mdc-row:last-child .mat-mdc-cell {
+      border-bottom: none !important;
+    }
+
+    .mat-mdc-row:hover {
+      background: rgba(0, 98, 65, 0.03);
+    }
+  }
+}
+
+// ---------- empty state ----------
+.empty-state {
+  padding: 32px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #94a3b8;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    opacity: 0.6;
+  }
 }
 
 .empty {
   color: #94a3b8;
   font-style: italic;
-  padding: 10px 0;
+  padding: 12px 14px;
+  background: $bg-soft;
+  border-radius: 10px;
 }
 
-.desc {
-  color: #475569;
-  font-size: 13px;
-  margin: 6px 0 12px;
-}
+// ---------- address ----------
+.address-card {
+  .address {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: #1e293b;
+    line-height: 1.75;
+    font-size: 14px;
+    padding: 14px 16px;
+    background: $bg-soft;
+    border-radius: 10px;
+    border-left: 3px solid $brand;
+  }
 
-.subsection {
-  margin-top: 12px;
-}
-
-.subsection-title {
-  font-weight: 800;
-  color: #0f172a;
-  margin: 10px 0;
-}
-
-.divider {
-  margin: 16px 0;
-}
-
-.empty-state {
-  padding: 18px 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  color: #94a3b8;
-}
-
-.mat-table-compact {
-  width: 100%;
-}
-
-.action-row {
-  margin-top: 12px;
-}
-
-@media (max-width: 1024px) {
-  .grid {
-    grid-template-columns: 1fr;
+  .address-icon {
+    color: $brand;
+    flex-shrink: 0;
+    margin-top: 2px;
   }
 }
 
+// ---------- responsive ----------
 @media (max-width: 768px) {
-  .kv-grid {
+  .page-container {
+    padding: 16px;
+  }
+
+  .page-title {
+    font-size: 18px;
+  }
+
+  .hero-card ::ng-deep .mat-mdc-card-content {
+    padding: 20px !important;
+  }
+
+  .hero-title {
+    font-size: 20px;
+  }
+
+  .section-card ::ng-deep {
+    .mat-mdc-card-header,
+    .mat-mdc-card-content {
+      padding-left: 16px !important;
+      padding-right: 16px !important;
+    }
+  }
+
+  .kv-grid,
+  .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .action-row {
+    flex-direction: column-reverse;
+    align-items: stretch;
+
+    button {
+      width: 100%;
+    }
   }
 }

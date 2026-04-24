@@ -10,10 +10,22 @@
   text-align: left;
   background: linear-gradient(180deg, rgba(0, 98, 65, 0.10) 0%, rgba(0, 98, 65, 0.00) 100%);
 
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .brand-text {
+    flex: 1;
+    min-width: 0;
+  }
+
   .logo {
-    width: 44px;
-    height: 44px;
-    margin-bottom: 10px;
+    width: 30px;
+    height: 40px;
+    flex-shrink: 0;
   }
 
   .title {
@@ -21,13 +33,13 @@
     font-weight: 700;
     color: #0f172a;
     line-height: 1.2;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
   }
 
   .subtitle {
     font-size: 12px;
     color: #475569;
-    margin-bottom: 6px;
+    margin-bottom: 0;
   }
 
   .school {

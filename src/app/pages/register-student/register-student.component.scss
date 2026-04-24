@@ -40,6 +40,30 @@
   justify-content: flex-end;
 }
 
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+
+  mat-form-field {
+    flex: 1 1 200px;
+    min-width: 180px;
+  }
+
+  .search-button {
+    height: 56px;
+    align-self: flex-start;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .filter-row .search-button {
+    width: 100%;
+  }
+}
+
 .message-card {
   margin-bottom: 16px;
 }

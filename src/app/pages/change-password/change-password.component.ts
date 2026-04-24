@@ -85,14 +85,15 @@ export class ChangePasswordComponent {
     }
 
     this.isLoading = true;
-    this.http.post(`${environment.apiUrl}/auth/change-password`, {
-      schoolId: this.schoolId,
+
+    this.http.post<any>(`${environment.apiUrl}/auth/change-password`, {
       oldPassword: this.oldPassword,
       newPassword: this.newPassword
     }).subscribe({
-      next: async () => {
+      next: async (res) => {
         this.isLoading = false;
-        await this.dialogService.alert('ระบบได้ทำการ เปลี่ยนรหัสผ่าน เรียบร้อยแล้ว');
+        const msg = res?.message || 'ระบบได้ทำการ เปลี่ยนรหัสผ่าน เรียบร้อยแล้ว';
+        await this.dialogService.alert(msg);
         this.oldPassword = '';
         this.newPassword = '';
         this.confirmPassword = '';

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { forkJoin, of } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -10,9 +11,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTableModule } from '@angular/material/table';
-import { forkJoin } from 'rxjs';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { AuthService } from '../../services/auth.service';
-import { NstRegisterService, NstRegister } from '../../services/nst-register.service';
+import { NstRegisterService, NstRegister, SchoolOption, LookupItem } from '../../services/nst-register.service';
 import { DashboardService } from '../../services/dashboard.service';
 import { DialogService } from '../../services/dialog.service';
 
@@ -47,6 +48,8 @@ interface NstListItem {
   name: string;
   bgColor: string;
   groupLabel: string;
+  atYear: string;
+  atClass: string;
   raw: NstRegister;
 }
 
@@ -64,7 +67,8 @@ interface NstListItem {
     MatInputModule,
     MatProgressSpinnerModule,
     MatDividerModule,
-    MatTableModule
+    MatTableModule,
+    MatAutocompleteModule
   ],
   templateUrl: './register-nst-info.component.html',
   styleUrls: ['./register-nst-info.component.scss']
@@ -75,12 +79,11 @@ export class RegisterNstInfoComponent implements OnInit {
   schoolName: string = '';
 
   // ตัวกรองค้นหา (จาก register_nst_info.jsp)
-  nstStatus: string = '*';
+  nstStatus: string = '';
   filterSex: string = '';
   filterAtClass: string = '';
   isLoading: boolean = false;
   hasSearched: boolean = false;
-
   MAX_PER_TRANSACTION = 15;
 
   // รายชื่อ นศท. ระหว่างรายงานตัว (ขวา - rs_req)
@@ -97,13 +100,18 @@ export class RegisterNstInfoComponent implements OnInit {
   // โอนย้ายเข้า
   showTransferSection: boolean = false;
   transferRegId: string = '';
+  transferProvinceId: string = '';
+  transferProvinceFilterText: string = '';
   transferSchoolId: string = '';
   transferSchoolName: string = '';
+  transferSchoolFilterText: string = '';
+  transferSchoolOptions: SchoolOption[] = [];
+  transferProvinceOptions: LookupItem[] = [];
   transferNstInfo: any = null;
   transferDoc: string = '';
 
   // ชั้นปี (เดิม) - ไม่มีชั้นปี 3 ตาม JSP (i==3 continue)
-  classYears: number[] = [1, 2, 4, 5];
+  classYears: string[] = ['1', '2', '4', '5'];
 
   // ตัวเลือกประเภทบัญชี (จาก register_nst_info.jsp lines 262-275)
   nstStatusOptions = [
@@ -143,6 +151,46 @@ export class RegisterNstInfoComponent implements OnInit {
         this.schoolName = user.schoolName || user.schoolId || '';
       }
     });
+
+    this.nstRegisterService.getSchoolList().subscribe({
+      next: (list) => {
+        this.transferSchoolOptions = list || [];
+      },
+      error: (err) => {
+        console.error('Error loading school list:', err);
+        this.transferSchoolOptions = [];
+      }
+    });
+
+    this.nstRegisterService.getProvinceList().subscribe({
+      next: (list) => {
+        this.transferProvinceOptions = list || [];
+      },
+      error: (err) => {
+        console.error('Error loading province list:', err);
+        this.transferProvinceOptions = [];
+      }
+    });
+  }
+
+  clearResults(): void {
+    this.reqList = [];
+    this.nreqList = [];
+    this.selectedReqItems.clear();
+    this.selectedNReqItems.clear();
+    this.hasSearched = false;
+    this.transferNstInfo = null;
+  }
+
+  onAtClassChange(): void {
+    this.filterSex = '';
+    this.nstStatus = '';
+    this.clearResults();
+  }
+
+  onSexChange(): void {
+    this.nstStatus = '';
+    this.clearResults();
   }
 
   // เป็นประเภทโอนย้าย (3x) หรือ ทั้งหมด (*) - แสดง section โอนย้ายเข้า
@@ -161,12 +209,12 @@ export class RegisterNstInfoComponent implements OnInit {
     return this.nstStatus === '*';
   }
 
+  get canSearch(): boolean {
+    return !!(this.filterAtClass && this.filterSex && this.nstStatus);
+  }
+
   // ค้นหา (Submit)
   async search(): Promise<void> {
-    if (!this.filterAtClass || !this.filterSex) {
-      await this.dialogService.alert('กรุณาเลือกชั้นปีและเพศ นศท.');
-      return;
-    }
     if (!this.schoolId) {
       await this.dialogService.alert('ไม่พบข้อมูลสถานศึกษา');
       return;
@@ -180,44 +228,129 @@ export class RegisterNstInfoComponent implements OnInit {
     this.selectedNReqItems.clear();
     this.transferNstInfo = null;
 
-    // เรียก API ทั้ง 2 ตาราง พร้อมกัน
-    forkJoin({
-      req: this.nstRegisterService.searchReq(this.schoolId, this.currentYear, this.filterAtClass, this.filterSex, this.nstStatus),
-      nreq: this.nstRegisterService.searchNReq(this.schoolId, this.currentYear, this.filterAtClass, this.filterSex, this.nstStatus)
-    }).subscribe({
-      next: (result) => {
-        this.reqList = this.mapToListItems(result.req);
-        this.nreqList = this.mapToListItems(result.nreq);
+    const req$ = this.nstRegisterService.searchReq(this.schoolId, this.currentYear, this.filterAtClass, this.filterSex, this.nstStatus);
+    const nreq$ = this.showNReqList
+      ? this.nstRegisterService.searchNReq(this.schoolId, this.currentYear, this.filterAtClass, this.filterSex, this.nstStatus)
+      : of([] as NstRegister[]);
+
+    forkJoin({ req: req$, nreq: nreq$ }).subscribe({
+      next: ({ req, nreq }) => {
+        this.reqList = this.mapToListItems(req);
+        this.nreqList = this.mapToListItems(nreq);
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('Error searching NST:', err);
+        console.error('Error loading lists:', err);
         this.isLoading = false;
       }
     });
   }
 
   private mapToListItems(data: NstRegister[]): NstListItem[] {
-    return data.map(n => ({
+    return this.sortListItems(data.map(n => this.toListItem(n)));
+  }
+
+  private toListItem(n: NstRegister): NstListItem {
+    return {
       pid: (n.regPid || '').trim(),
       nstId: (n.nstId || '').trim(),
       statusId: (n.nstStatusId || '').trim(),
-      rd25: (n.nstRd25 || '').trim(),
+      rd25: n.nstRd25 != null ? String(n.nstRd25).trim() : '',
       name: `${(n.regTitle || '').trim()} ${(n.regFname || '').trim()} ${(n.regLname || '').trim()}`.trim(),
       bgColor: STATUS_COLORS[n.nstStatusId] || '#FFFFFF',
       groupLabel: STATUS_LABELS[n.nstStatusId] || '',
+      atYear: n.atYear != null ? String(n.atYear).trim() : '',
+      atClass: n.nstAtClass != null ? String(n.nstAtClass).trim() : '',
       raw: n
-    }));
+    };
+  }
+
+  private sortListItems(items: NstListItem[]): NstListItem[] {
+    return [...items].sort((left, right) => {
+      const leftRd25 = Number(left.rd25 || '0');
+      const rightRd25 = Number(right.rd25 || '0');
+      if (leftRd25 !== rightRd25) {
+        return leftRd25 - rightRd25;
+      }
+      const nstIdCompare = left.nstId.localeCompare(right.nstId);
+      if (nstIdCompare !== 0) {
+        return nstIdCompare;
+      }
+      return left.name.localeCompare(right.name, 'th');
+    });
+  }
+
+  private getReqStatusForCurrentFilter(): string | null {
+    switch (this.nstStatus) {
+      case '5':
+        return 'A1';
+      case '2':
+        return 'A2';
+      case 'E5':
+        return 'A3';
+      case 'E2':
+        return 'A4';
+      case '35':
+        return 'A5';
+      case '32':
+        return 'A6';
+      case '3E5':
+        return 'A7';
+      case '3E2':
+        return 'A8';
+      default:
+        return null;
+    }
+  }
+
+  private getNReqStatusForCurrentFilter(): string | null {
+    switch (this.nstStatus) {
+      case '5':
+        return `5${this.filterAtClass}`;
+      case '2':
+        return `2${this.filterAtClass}`;
+      case 'E5':
+        return 'E1';
+      case 'E2':
+        return 'E2';
+      default:
+        return null;
+    }
+  }
+
+  private toReqListItem(item: NstListItem): NstListItem {
+    const nextStatusId = this.getReqStatusForCurrentFilter() || item.statusId;
+    return this.toListItem({
+      ...item.raw,
+      nstStatusId: nextStatusId,
+      atYear: this.currentYear,
+      nstAtClass: this.filterAtClass
+    });
+  }
+
+  private toNReqListItem(item: NstListItem): NstListItem | null {
+    const nextStatusId = this.getNReqStatusForCurrentFilter();
+    if (!nextStatusId) {
+      return null;
+    }
+    return this.toListItem({
+      ...item.raw,
+      nstStatusId: nextStatusId,
+      atYear: String(Number(this.currentYear) - 1),
+      nstAtClass: this.filterAtClass
+    });
   }
 
   // แสดงข้อความใน list item: [RD25] NstId ชื่อ
   getItemDisplay(item: NstListItem): string {
-    const rd25Part = item.rd25 && item.rd25 !== '0' ? `[${item.rd25}] ` : '[] ';
+    const rd25Part = item.rd25 && item.rd25 !== '0' ? `[${item.rd25}] ` : '';
     return `${rd25Part}${item.nstId} ${item.name}`;
   }
 
   // toggle selection ใน list (รองรับ multi-select ด้วย Ctrl/Shift)
   toggleNReqSelection(pid: string): void {
+    // เลือกฝั่งซ้ายแล้วเคลียร์ฝั่งขวา เพื่อให้ active เฉพาะลูกศรฝั่งที่กำลังย้าย
+    this.selectedReqItems.clear();
     if (this.selectedNReqItems.has(pid)) {
       this.selectedNReqItems.delete(pid);
     } else {
@@ -226,6 +359,8 @@ export class RegisterNstInfoComponent implements OnInit {
   }
 
   toggleReqSelection(pid: string): void {
+    // เลือกฝั่งขวาแล้วเคลียร์ฝั่งซ้าย เพื่อให้ active เฉพาะลูกศรฝั่งที่กำลังย้าย
+    this.selectedNReqItems.clear();
     if (this.selectedReqItems.has(pid)) {
       this.selectedReqItems.delete(pid);
     } else {
@@ -241,9 +376,27 @@ export class RegisterNstInfoComponent implements OnInit {
     return this.selectedReqItems.has(pid);
   }
 
+  get canMoveToReq(): boolean {
+    return this.selectedNReqItems.size > 0 && !this.isLoading;
+  }
+
+  get canMoveFromReq(): boolean {
+    return this.selectedReqItems.size > 0 && !this.isLoading;
+  }
+
   // ดับเบิ้ลคลิก → แสดงข้อมูล นศท. (จาก showNSTInfo ใน JSP)
   showNstInfo(item: NstListItem): void {
-    this.dialogService.alert(`ข้อมูล นศท.\n\nเลข ปชช.: ${item.pid}\nรหัส นศท.: ${item.nstId}\nชื่อ: ${item.name}\nสถานะ: ${item.statusId}`);
+    const statusLabel = STATUS_LABELS[item.statusId] || item.statusId;
+    const classLabel = item.atClass ? ` ปีที่ ${item.atClass}` : '';
+    const yearLabel = item.atYear ? `ปีการศึกษา ${item.atYear}` : '-';
+    this.dialogService.alert(
+      `ข้อมูล นศท.\n\n` +
+      `เลข ปชช.: ${item.pid}\n` +
+      `รหัส นศท.: ${item.nstId}\n` +
+      `ชื่อ: ${item.name}\n` +
+      `${yearLabel}\n` +
+      `สถานะ: ${statusLabel}${classLabel}`
+    );
   }
 
   // นำ นศท. เข้ารายงานตัว (ซ้าย → ขวา) (จาก checkAddNull ใน JSP)
@@ -261,12 +414,20 @@ export class RegisterNstInfoComponent implements OnInit {
     if (!ok) return;
 
     const pids = Array.from(this.selectedNReqItems);
+    this.isLoading = true;
     this.nstRegisterService.addToReq(pids, this.nstStatus, this.filterAtClass, this.filterSex).subscribe({
       next: async () => {
+        const movedItems = this.nreqList.filter(item => this.selectedNReqItems.has(item.pid));
+        const updatedReqItems = movedItems.map(item => this.toReqListItem(item));
+
+        this.nreqList = this.nreqList.filter(item => !this.selectedNReqItems.has(item.pid));
+        this.reqList = this.sortListItems([...this.reqList, ...updatedReqItems]);
+        this.selectedNReqItems.clear();
+        this.isLoading = false;
         await this.dialogService.alert(`นำ นศท. เข้ารายงานตัว ${count} รายการ สำเร็จ`);
-        this.search();
       },
       error: async (err) => {
+        this.isLoading = false;
         console.error('Error adding to req:', err);
         await this.dialogService.alert('เกิดข้อผิดพลาดในการดำเนินการ');
       }
@@ -287,13 +448,35 @@ export class RegisterNstInfoComponent implements OnInit {
     const ok = await this.dialogService.confirm(`ยืนยันนำ นศท. ออกจากการรายงานตัว จำนวน ${count} รายการ?`);
     if (!ok) return;
 
-    const pids = Array.from(this.selectedReqItems);
-    this.nstRegisterService.removeFromReq(pids, this.nstStatus, this.filterAtClass, this.filterSex).subscribe({
+    // สร้าง nstReqList = ["pid_statusId", ...] ตรงตาม NstReqList value ของ JSP legacy
+    // โดย lookup statusId จาก reqList (ไม่เก็บไว้ใน selectedReqItems เพื่อหลีกเลี่ยง stale data)
+    const nstReqList = Array.from(this.selectedReqItems)
+      .map(pid => {
+        const item = this.reqList.find(r => r.pid === pid);
+        return item ? pid + '_' + item.statusId : null;
+      })
+      .filter((v): v is string => v !== null);
+    if (nstReqList.length === 0) return;
+    this.isLoading = true;
+    this.nstRegisterService.removeFromReq(nstReqList, this.filterAtClass, this.filterSex).subscribe({
       next: async () => {
+        const movedItems = this.reqList.filter(item => this.selectedReqItems.has(item.pid));
+        const restoredItems = this.showNReqList
+          ? movedItems
+              .map(item => this.toNReqListItem(item))
+              .filter((item): item is NstListItem => item !== null)
+          : [];
+
+        this.reqList = this.reqList.filter(item => !this.selectedReqItems.has(item.pid));
+        if (restoredItems.length > 0) {
+          this.nreqList = this.sortListItems([...this.nreqList, ...restoredItems]);
+        }
+        this.selectedReqItems.clear();
+        this.isLoading = false;
         await this.dialogService.alert(`นำ นศท. ออกจากรายงานตัว ${count} รายการ สำเร็จ`);
-        this.search();
       },
       error: async (err) => {
+        this.isLoading = false;
         console.error('Error removing from req:', err);
         await this.dialogService.alert('เกิดข้อผิดพลาดในการดำเนินการ');
       }
@@ -334,6 +517,80 @@ export class RegisterNstInfoComponent implements OnInit {
         console.error('Error searching transfer NST:', err);
         await this.dialogService.alert('ไม่พบข้อมูล!!\n\nกรุณาตรวจสอบความถูกต้อง แล้วลองใหม่อีกครั้ง');
       }
+    });
+  }
+
+  onTransferSchoolChange(): void {
+    const selected = this.transferSchoolOptions.find(s => s.schoolId === this.transferSchoolId);
+    this.transferSchoolName = selected?.schoolShortName || selected?.schoolName || '';
+  }
+
+  onSchoolInputChange(): void {
+    const displayVal = (this.transferSchoolFilterText || '').trim();
+    const found = this.transferSchoolOptions.find(s =>
+      (s.schoolShortName || s.schoolName) === displayVal
+    );
+    if (!found) {
+      this.transferSchoolId = '';
+      this.transferSchoolName = '';
+    }
+  }
+
+  onSchoolSelected(event: any): void {
+    const displayVal = event.option.value;
+    const found = this.filteredTransferSchoolOptions.find(s =>
+      (s.schoolShortName || s.schoolName) === displayVal
+    );
+    this.transferSchoolId = found?.schoolId || '';
+    this.transferSchoolName = found?.schoolShortName || found?.schoolName || '';
+  }
+
+  onTransferProvinceChange(): void {
+    this.transferSchoolId = '';
+    this.transferSchoolName = '';
+    this.transferSchoolFilterText = '';
+  }
+
+  onProvinceInputChange(): void {
+    const found = this.transferProvinceOptions.find(p => p.desc === this.transferProvinceFilterText);
+    if (!found) {
+      this.transferProvinceId = '';
+      this.transferSchoolId = '';
+      this.transferSchoolName = '';
+      this.transferSchoolFilterText = '';
+    }
+  }
+
+  onProvinceSelected(event: any): void {
+    const desc = event.option.value;
+    const found = this.transferProvinceOptions.find(p => p.desc === desc);
+    this.transferProvinceId = found?.id || '';
+    this.transferSchoolId = '';
+    this.transferSchoolName = '';
+    this.transferSchoolFilterText = '';
+  }
+
+  get filteredTransferProvinceOptions(): LookupItem[] {
+    const q = (this.transferProvinceFilterText || '').trim().toLowerCase();
+    if (!q) return this.transferProvinceOptions;
+    return this.transferProvinceOptions.filter(p => {
+      const id = (p.id || '').toLowerCase();
+      const desc = (p.desc || '').toLowerCase();
+      return id.includes(q) || desc.includes(q);
+    });
+  }
+
+  get filteredTransferSchoolOptions(): SchoolOption[] {
+    const provinceId = (this.transferProvinceId || '').trim();
+    if (!provinceId) return [];
+    const q = (this.transferSchoolFilterText || '').trim().toLowerCase();
+    return this.transferSchoolOptions.filter(s => {
+      if ((s.provinceCid || '').trim() !== provinceId) return false;
+      if (!q) return true;
+      const id = (s.schoolId || '').toLowerCase();
+      const shortName = (s.schoolShortName || '').toLowerCase();
+      const name = (s.schoolName || '').toLowerCase();
+      return id.includes(q) || shortName.includes(q) || name.includes(q);
     });
   }
 

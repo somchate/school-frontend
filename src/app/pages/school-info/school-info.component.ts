@@ -3,14 +3,23 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTableModule } from '@angular/material/table';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTableModule } from '@angular/material/table';
 import { AuthService } from '../../services/auth.service';
-import { SchoolInfoService, Inspector } from '../../services/school-info.service';
+import { DashboardService } from '../../services/dashboard.service';
+import { SchoolInfoService } from '../../services/school-info.service';
+
+interface Schedule {
+  type: string;
+  date: string;
+  time: string;
+  place: string;
+  note: string;
+}
 
 @Component({
   selector: 'app-school-info',
@@ -20,12 +29,12 @@ import { SchoolInfoService, Inspector } from '../../services/school-info.service
     FormsModule,
     MatCardModule,
     MatIconModule,
-    MatTableModule,
     MatDividerModule,
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatTableModule
   ],
   templateUrl: './school-info.component.html',
   styleUrls: ['./school-info.component.scss']
@@ -40,20 +49,23 @@ export class SchoolInfoComponent implements OnInit {
     inform: ''
   };
 
+  certifierData = {
+    fname: '',
+    lname: '',
+    position: ''
+  };
+
   isEditing: boolean = false;
+  isEditingCertifier: boolean = false;
+  isSavingCertifier: boolean = false;
   isLoading: boolean = true;
 
-  // ผกท.พ. (M0 + มีคำสั่ง)
-  inspectorM0: Inspector[] = [];
-  // ผกท. (M1 + มีคำสั่ง)
-  inspectorM1: Inspector[] = [];
-  // เจ้าหน้าที่ผ่านการฝึกแต่ยังไม่ได้แต่งตั้ง (M0/M1 + ไม่มีคำสั่ง)
-  inspectorTrained: Inspector[] = [];
-  // เจ้าหน้าที่อื่นๆ
-  inspectorOther: Inspector[] = [];
+  currentYear: string = '';
+  schedules: Schedule[] = [];
 
   constructor(
     private authService: AuthService,
+    private dashboardService: DashboardService,
     private schoolInfoService: SchoolInfoService
   ) {}
 
@@ -61,10 +73,44 @@ export class SchoolInfoComponent implements OnInit {
     this.authService.currentUser.subscribe(user => {
       if (user) {
         this.schoolData.schoolId = user.schoolId || '';
+        this.schoolData.schoolName = user.schoolName || '';
         if (this.schoolData.schoolId) {
           this.loadSchoolInfo();
-          this.loadInspectors();
+          this.loadYearAndSchedules();
         }
+      }
+    });
+  }
+
+  private loadYearAndSchedules(): void {
+    this.dashboardService.getYearEducate().subscribe({
+      next: (data) => {
+        this.currentYear = data.yearEducate || '';
+        this.loadSchedules();
+      },
+      error: () => {
+        const now = new Date();
+        let y = now.getFullYear() + 543;
+        if (now.getMonth() < 4) y--;
+        this.currentYear = y.toString();
+        this.loadSchedules();
+      }
+    });
+  }
+
+  private loadSchedules(): void {
+    this.dashboardService.getSchedules(this.schoolData.schoolId, this.currentYear).subscribe({
+      next: (data: any[]) => {
+        this.schedules = (data || []).map(s => ({
+          type: s.scheduleType === 'A' ? 'รับสมัคร' : 'รับรายงานตัว',
+          date: s.scheduleDate || '-',
+          time: s.scheduleTime === 'M' ? 'เช้า' : 'บ่าย',
+          place: s.regPlace || '-',
+          note: s.note || ''
+        }));
+      },
+      error: () => {
+        this.schedules = [];
       }
     });
   }
@@ -78,6 +124,9 @@ export class SchoolInfoComponent implements OnInit {
         this.schoolData.openDate = data.schoolOpenDate || '';
         this.schoolData.address = data.schoolAddr || '';
         this.schoolData.inform = data.usrInform || '';
+        this.certifierData.fname = data.certifierFname || '';
+        this.certifierData.lname = data.certifierLname || '';
+        this.certifierData.position = data.certifierPosition || '';
         this.isLoading = false;
       },
       error: (err) => {
@@ -85,35 +134,6 @@ export class SchoolInfoComponent implements OnInit {
         this.isLoading = false;
       }
     });
-  }
-
-  loadInspectors(): void {
-    this.schoolInfoService.getInspectors(this.schoolData.schoolId).subscribe({
-      next: (data) => {
-        this.inspectorM0 = data.filter(i => i.inspectorType?.trim() === 'M0' && i.orderCommand);
-        this.inspectorM1 = data.filter(i => i.inspectorType?.trim() === 'M1' && i.orderCommand);
-        this.inspectorTrained = data.filter(i =>
-          (i.inspectorType?.trim() === 'M0' || i.inspectorType?.trim() === 'M1') && !i.orderCommand
-        );
-        this.inspectorOther = data.filter(i =>
-          !i.inspectorType || (i.inspectorType.trim() !== 'M0' && i.inspectorType.trim() !== 'M1')
-        );
-      },
-      error: (err) => {
-        console.error('Error loading inspectors:', err);
-      }
-    });
-  }
-
-  getFullName(i: Inspector): string {
-    return `${i.titleName || ''} ${i.firstName || ''} ${i.lastName || ''}`.trim();
-  }
-
-  maskPid(pid: string): string {
-    if (!pid) return '-';
-    const p = pid.trim();
-    if (p.length !== 13) return p;
-    return `${p[0]}-${p[1]}XXX-XXXX${p[9]}-${p[10]}${p[11]}-${p[12]}`;
   }
 
   saveInform(): void {
@@ -131,6 +151,37 @@ export class SchoolInfoComponent implements OnInit {
   cancelEdit(): void {
     this.isEditing = false;
     this.loadSchoolInfo();
+  }
+
+  saveCertifier(): void {
+    this.isSavingCertifier = true;
+    this.schoolInfoService.updateCertifier(
+      this.schoolData.schoolId,
+      this.certifierData.fname,
+      this.certifierData.lname,
+      this.certifierData.position
+    ).subscribe({
+      next: (data) => {
+        this.certifierData.fname = data.certifierFname || '';
+        this.certifierData.lname = data.certifierLname || '';
+        this.certifierData.position = data.certifierPosition || '';
+        this.isEditingCertifier = false;
+        this.isSavingCertifier = false;
+      },
+      error: (err) => {
+        console.error('Error saving certifier:', err);
+        this.isSavingCertifier = false;
+      }
+    });
+  }
+
+  cancelCertifierEdit(): void {
+    this.isEditingCertifier = false;
+    this.loadSchoolInfo();
+  }
+
+  hasCertifier(): boolean {
+    return !!(this.certifierData.fname || this.certifierData.lname || this.certifierData.position);
   }
 
   formatThaiDate(dateStr: string): string {
