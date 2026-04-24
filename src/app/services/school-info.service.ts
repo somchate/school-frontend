@@ -39,17 +39,16 @@ export class SchoolInfoService {
     return this.http.get<SchoolInfo>(`${this.API_URL}/school/info/${schoolId}`);
   }
 
-  updateInform(schoolId: string, inform: string): Observable<SchoolInfo> {
-    return this.http.put<SchoolInfo>(`${this.API_URL}/school/inform/${schoolId}`, { inform });
+  updateInform(inform: string): Observable<SchoolInfo> {
+    return this.http.put<SchoolInfo>(`${this.API_URL}/school/inform`, { inform });
   }
 
   updateCertifier(
-    schoolId: string,
     certifierFname: string,
     certifierLname: string,
     certifierPosition: string
   ): Observable<SchoolInfo> {
-    return this.http.put<SchoolInfo>(`${this.API_URL}/school/certifier/${schoolId}`, {
+    return this.http.put<SchoolInfo>(`${this.API_URL}/school/certifier`, {
       certifierFname,
       certifierLname,
       certifierPosition

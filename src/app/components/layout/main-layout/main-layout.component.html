@@ -17,6 +17,10 @@
       </button>
       <span class="toolbar-title">ระบบงานรับสมัครและรับรายงานตัว นศท.</span>
       <span class="spacer"></span>
+      <span class="current-user" *ngIf="currentUser$ | async as user">
+        <mat-icon class="user-icon">account_circle</mat-icon>
+        <span class="username">{{ user.username }}</span>
+      </span>
       <button mat-icon-button
               class="logout-btn"
               (click)="logout()"

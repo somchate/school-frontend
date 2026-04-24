@@ -137,7 +137,7 @@ export class SchoolInfoComponent implements OnInit {
   }
 
   saveInform(): void {
-    this.schoolInfoService.updateInform(this.schoolData.schoolId, this.schoolData.inform).subscribe({
+    this.schoolInfoService.updateInform(this.schoolData.inform).subscribe({
       next: (data) => {
         this.schoolData.inform = data.usrInform || '';
         this.isEditing = false;
@@ -156,7 +156,6 @@ export class SchoolInfoComponent implements OnInit {
   saveCertifier(): void {
     this.isSavingCertifier = true;
     this.schoolInfoService.updateCertifier(
-      this.schoolData.schoolId,
       this.certifierData.fname,
       this.certifierData.lname,
       this.certifierData.position

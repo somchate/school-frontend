@@ -75,10 +75,13 @@ export class NstRegisterService {
   }
 
   // ค้นหา นศท. โอนย้ายเข้า
-  searchTransferNst(regId: string, schoolId: string): Observable<any> {
+  searchTransferNst(regId: string, schoolId: string, atClass: string, sex: string, nstStatus: string): Observable<any> {
     let params = new HttpParams()
       .set('regId', regId)
-      .set('schoolId', schoolId);
+      .set('schoolId', schoolId)
+      .set('atClass', atClass)
+      .set('sex', sex)
+      .set('nstStatus', nstStatus);
     return this.http.get<any>(`${this.API_URL}/nst/transfer/search`, { params });
   }
 

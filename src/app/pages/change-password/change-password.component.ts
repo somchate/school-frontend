@@ -11,6 +11,10 @@ import { AuthService } from '../../services/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { DialogService } from '../../services/dialog.service';
+import {
+  PASSWORD_PATTERN,
+  PASSWORD_RULE_MESSAGE
+} from '../../components/force-password-change-dialog/force-password-change-dialog.component';
 
 @Component({
   selector: 'app-change-password',
@@ -49,7 +53,7 @@ export class ChangePasswordComponent {
     });
   }
 
-  // รับเฉพาะตัวเลข (จาก checkNumber ใน JSP)
+  // รับเฉพาะตัวเลข (จาก checkNumber ใน JSP) — ยังคงไว้เผื่อใช้งานในอนาคต แม้ฟิลด์ใหม่จะไม่จำกัดแล้ว
   onKeyPressNumber(event: KeyboardEvent): boolean {
     const charCode = event.which ? event.which : event.keyCode;
     if (charCode < 48 || charCode > 57) {
@@ -75,10 +79,25 @@ export class ChangePasswordComponent {
       return;
     }
 
-    // รหัสผ่านใหม่กับยืนยันรหัสต้องตรงกัน และอย่างน้อย 4 ตัวอักษร
-    if (this.newPassword !== this.confirmPassword || this.newPassword.length < 4) {
-      await this.dialogService.alert('รหัสผ่านใหม่กับยืนยันรหัสต้องตรงกัน\n\nและอย่างน้อย 4 ตัวอักษร\n\nกรุณากรอกอีกครั้ง !!!');
-      this.oldPassword = '';
+    // รหัสผ่านใหม่กับยืนยันรหัสต้องตรงกัน
+    if (this.newPassword !== this.confirmPassword) {
+      await this.dialogService.alert('รหัสผ่านใหม่และยืนยันรหัสผ่านไม่ตรงกัน\n\nกรุณากรอกอีกครั้ง !!!');
+      this.newPassword = '';
+      this.confirmPassword = '';
+      return;
+    }
+
+    // ตรวจเงื่อนไขความปลอดภัย: อย่างน้อย 8 ตัวอักษร ประกอบด้วย ตัวอักษรอังกฤษ / ตัวเลข / อักขระพิเศษ
+    if (!PASSWORD_PATTERN.test(this.newPassword)) {
+      await this.dialogService.alert(PASSWORD_RULE_MESSAGE);
+      this.newPassword = '';
+      this.confirmPassword = '';
+      return;
+    }
+
+    // ห้ามใช้ซ้ำกับรหัสผ่านเดิม
+    if (this.newPassword === this.oldPassword) {
+      await this.dialogService.alert('รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสผ่านเดิม');
       this.newPassword = '';
       this.confirmPassword = '';
       return;

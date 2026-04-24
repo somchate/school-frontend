@@ -8,6 +8,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { AuthService } from '../../../services/auth.service';
+import { User } from '../../../models/auth.model';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-main-layout',
@@ -22,8 +24,10 @@ export class MainLayoutComponent {
   isMobile: boolean = false;
   sidenavMode: 'side' | 'over' = 'side';
   sidenavOpened: boolean = true;
+  currentUser$: Observable<User | null>;
 
   constructor(private authService: AuthService, private router: Router) {
+    this.currentUser$ = this.authService.currentUser;
     this.updateLayout();
   }
 

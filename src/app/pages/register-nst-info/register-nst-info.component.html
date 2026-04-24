@@ -242,6 +242,18 @@
             <mat-icon>list</mat-icon>
             <span>รายชื่อ นศท. <span class="badge green">ระหว่างรายงานตัว</span></span>
             <span class="count">{{ reqList.length }} นาย</span>
+            <span class="spacer"></span>
+            <button
+              mat-stroked-button
+              color="warn"
+              class="cancel-transfer-btn"
+              (click)="cancelTransferSelected()"
+              [disabled]="!canCancelTransfer"
+              title="ยกเลิกการโอนย้ายของรายการที่เลือก (เฉพาะสถานะ A5-A8)"
+            >
+              <mat-icon>undo</mat-icon>
+              ยกเลิกโอนย้าย
+            </button>
           </div>
           <div class="list-hint">สามารถคลิกเลือกหลายรายการ</div>
           <div class="table-scroll" *ngIf="reqList.length > 0">

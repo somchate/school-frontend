@@ -4,10 +4,19 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { Dialog } from '@angular/cdk/dialog';
 import { finalize } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { LoginType, LoginRequest } from '../../models/auth.model';
 import { DialogService } from '../../services/dialog.service';
+import {
+  ForcePasswordChangeDialogComponent,
+  ForcePasswordChangeDialogData
+} from '../force-password-change-dialog/force-password-change-dialog.component';
+
+/** รหัสผ่านเริ่มต้น — ใช้เป็น fallback หาก backend ไม่ได้ส่ง flag mustChangePassword กลับมา */
+const DEFAULT_PASSWORD = '123';
 
 /** ค่าเดียวกับ TDC Recruit login.component.ts */
 const RECAPTCHA_SITE_KEY = '6Lc9kGEsAAAAACV0BgLv-Pt9fnwpruT-KuyqgQQv';
@@ -39,8 +48,25 @@ export class LoginComponent implements OnDestroy {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private cdkDialog: Dialog
   ) {}
+
+  /** เปิด dialog บังคับเปลี่ยนรหัสผ่านเมื่อผู้ใช้ยังคงใช้รหัสผ่านเริ่มต้น (123) */
+  private async promptForcePasswordChange(oldPassword: string): Promise<void> {
+    const ref = this.cdkDialog.open<boolean, ForcePasswordChangeDialogData>(
+      ForcePasswordChangeDialogComponent,
+      {
+        data: { oldPassword },
+        hasBackdrop: false,
+        disableClose: true
+      }
+    );
+    const changed = await firstValueFrom(ref.closed);
+    if (changed) {
+      await this.dialogService.alert('เปลี่ยนรหัสผ่านเรียบร้อยแล้ว กรุณาใช้รหัสผ่านใหม่ในการเข้าสู่ระบบครั้งต่อไป');
+    }
+  }
 
   ngOnDestroy(): void {
     const badge = document.querySelector('.grecaptcha-badge');
@@ -88,11 +114,17 @@ export class LoginComponent implements OnDestroy {
       recaptchaToken
     };
 
+    const enteredPassword = this.passwordSid;
     this.authService.login(loginRequest).pipe(
       finalize(() => (this.loading = false))
     ).subscribe({
-      next: (response) => {
+      next: async (response) => {
         if (response.success) {
+          const mustChange = response.mustChangePassword === true
+            || (response.mustChangePassword === undefined && enteredPassword === DEFAULT_PASSWORD);
+          if (mustChange) {
+            await this.promptForcePasswordChange(enteredPassword);
+          }
           this.router.navigate(['/school-info']);
         } else {
           this.errorMessage = response.message || 'เข้าสู่ระบบไม่สำเร็จ';
@@ -128,11 +160,17 @@ export class LoginComponent implements OnDestroy {
       recaptchaToken
     };
 
+    const enteredPassword = this.passwordPid;
     this.authService.login(loginRequest).pipe(
       finalize(() => (this.loading = false))
     ).subscribe({
-      next: (response) => {
+      next: async (response) => {
         if (response.success && response.user) {
+          const mustChange = response.mustChangePassword === true
+            || (response.mustChangePassword === undefined && enteredPassword === DEFAULT_PASSWORD);
+          if (mustChange) {
+            await this.promptForcePasswordChange(enteredPassword);
+          }
           this.router.navigate(['/school-info']);
         } else {
           this.errorMessage = response.message || 'เข้าสู่ระบบไม่สำเร็จ';

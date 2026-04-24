@@ -110,8 +110,8 @@ export class RegisterNstInfoComponent implements OnInit {
   transferNstInfo: any = null;
   transferDoc: string = '';
 
-  // ชั้นปี (เดิม) - ไม่มีชั้นปี 3 ตาม JSP (i==3 continue)
-  classYears: string[] = ['1', '2', '4', '5'];
+  // ชั้นปี (เดิม) — ตาม register_nst_info.jsp: for (int i=1; i<6; i++) ครบทุกชั้น 1–5
+  classYears: string[] = ['1', '2', '3', '4', '5'];
 
   // ตัวเลือกประเภทบัญชี (จาก register_nst_info.jsp lines 262-275)
   nstStatusOptions = [
@@ -384,6 +384,48 @@ export class RegisterNstInfoComponent implements OnInit {
     return this.selectedReqItems.size > 0 && !this.isLoading;
   }
 
+  // เปิดปุ่ม ยกเลิกโอนย้าย เมื่อเลือกแถวที่โอนย้ายเข้า (status A5/A6/A7/A8)
+  get canCancelTransfer(): boolean {
+    if (this.selectedReqItems.size === 0 || this.isLoading) return false;
+    return Array.from(this.selectedReqItems).every(pid => {
+      const item = this.reqList.find(r => r.pid === pid);
+      return !!item && /^A[5-8]$/.test(item.statusId);
+    });
+  }
+
+  // ยกเลิกโอนย้าย นศท. เข้า — ใช้ flow เดียวกับ legacy "Delete" (register_nst_info_edit.jsp)
+  // ไปเรียก removeFromReq — DELETE SIA_NST_STATUS ในปีปัจจุบัน และ rollback MIA_NST_REGISTER จากปีก่อน
+  async cancelTransferSelected(): Promise<void> {
+    if (!this.canCancelTransfer) return;
+    const count = this.selectedReqItems.size;
+    const ok = await this.dialogService.confirm(`ยืนยันยกเลิกการโอนย้าย นศท. จำนวน ${count} รายการ?`);
+    if (!ok) return;
+
+    // รูปแบบ "pid_statusId" ตาม NstReqList ของ legacy
+    const nstReqList = Array.from(this.selectedReqItems)
+      .map(pid => {
+        const item = this.reqList.find(r => r.pid === pid);
+        return item ? pid + '_' + item.statusId : null;
+      })
+      .filter((v): v is string => v !== null);
+    if (nstReqList.length === 0) return;
+
+    this.isLoading = true;
+    this.nstRegisterService.removeFromReq(nstReqList, this.filterAtClass, this.filterSex).subscribe({
+      next: async () => {
+        this.reqList = this.reqList.filter(item => !this.selectedReqItems.has(item.pid));
+        this.selectedReqItems.clear();
+        this.isLoading = false;
+        await this.dialogService.alert(`ยกเลิกการโอนย้าย ${count} รายการ สำเร็จ`);
+      },
+      error: async (err) => {
+        this.isLoading = false;
+        console.error('cancelTransfer error:', err);
+        await this.dialogService.alert('เกิดข้อผิดพลาดในการยกเลิกโอนย้าย');
+      }
+    });
+  }
+
   // ดับเบิ้ลคลิก → แสดงข้อมูล นศท. (จาก showNSTInfo ใน JSP)
   showNstInfo(item: NstListItem): void {
     const statusLabel = STATUS_LABELS[item.statusId] || item.statusId;
@@ -494,7 +536,13 @@ export class RegisterNstInfoComponent implements OnInit {
       return;
     }
 
-    this.nstRegisterService.searchTransferNst(this.transferRegId, this.transferSchoolId).subscribe({
+    this.nstRegisterService.searchTransferNst(
+      this.transferRegId,
+      this.transferSchoolId,
+      this.filterAtClass,
+      this.filterSex,
+      this.nstStatus
+    ).subscribe({
       next: async (data) => {
         if (!data || (data.MIA_NST && data.MIA_NST.length === 0)) {
           await this.dialogService.alert('ไม่พบข้อมูล!!\n\nกรุณาตรวจสอบความถูกต้อง แล้วลองใหม่อีกครั้ง');
@@ -604,6 +652,7 @@ export class RegisterNstInfoComponent implements OnInit {
       atClass: this.filterAtClass,
       sex: this.filterSex,
       nstStatus: this.nstStatus,
+      nstCurStatusId: this.transferNstInfo.statusid,
       schoolIdCur: this.transferNstInfo.schoolid_cur
     }).subscribe({
       next: async () => {

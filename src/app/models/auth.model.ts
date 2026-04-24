@@ -22,6 +22,8 @@ export interface LoginResponse {
   message?: string;
   token?: string;
   user?: User;
+  /** backend แจ้งว่าต้องบังคับเปลี่ยนรหัสผ่าน (เช่น ยังใช้รหัสเริ่มต้น "123") */
+  mustChangePassword?: boolean;
 }
 
 export interface User {
