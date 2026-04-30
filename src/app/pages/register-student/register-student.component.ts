@@ -77,10 +77,15 @@ export class RegisterStudentComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const n = new Date();
-    let y = n.getFullYear() + 543;
-    if (n.getMonth() < 4) { y--; }
-    this.currentYear = y.toString();
+    this.dashboardService.getYearEducate().subscribe({
+      next: (data) => { this.currentYear = data.yearEducate || ''; },
+      error: () => {
+        const n = new Date();
+        let y = n.getFullYear() + 543;
+        if (n.getMonth() < 4) { y--; }
+        this.currentYear = y.toString();
+      }
+    });
     this.onReady();
 
     // โหลด lookup data
