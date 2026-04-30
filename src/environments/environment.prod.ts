@@ -1,4 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: '/api'
+  apiUrl: '/api',
+  linkage2Url: 'http://localhost:15043'
 };

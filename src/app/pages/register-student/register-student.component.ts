@@ -357,13 +357,6 @@ export class RegisterStudentComponent implements OnInit {
       return;
     }
 
-    // ตรวจสอบสัญชาติ (ต้องเป็นไทย)
-    if (data.natId !== '099') {
-      this.searchMessage = `${data.pid} ไม่ใช่สัญชาติไทย ไม่สามารถสมัคร นศท. ได้ !!!`;
-      this.searchMessageType = 'error';
-      return;
-    }
-
     // ตรวจสอบอายุ (15-22)
     if (data.age < 15) {
       this.searchMessage = `${data.pid} มีอายุน้อยกว่า 15 ปี ไม่สามารถสมัคร นศท. ได้ !!!`;
@@ -372,6 +365,13 @@ export class RegisterStudentComponent implements OnInit {
     }
     if (data.age > 22) {
       this.searchMessage = `${data.pid} มีอายุมากกว่า 22 ปี ไม่สามารถสมัคร นศท. ได้ !!!`;
+      this.searchMessageType = 'error';
+      return;
+    }
+
+    // ตรวจสอบสัญชาติ (ต้องเป็นไทย)
+    if (data.natId !== '099') {
+      this.searchMessage = `${data.pid} ไม่ใช่สัญชาติไทย ไม่สามารถสมัคร นศท. ได้ !!!`;
       this.searchMessageType = 'error';
       return;
     }

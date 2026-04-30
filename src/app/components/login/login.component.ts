@@ -86,8 +86,7 @@ export class LoginComponent implements OnDestroy {
   }
 
   goToThaiDLogin(): void {
-    const thaidUrl = (window as any).__THAID_SIGNIN_URL__ || 'http://localhost:15043/signin';
-    window.location.href = thaidUrl;
+    this.router.navigate(['/login-thaid']);
   }
 
   async loginBySchoolId(): Promise<void> {
