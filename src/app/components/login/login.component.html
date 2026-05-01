@@ -12,7 +12,7 @@
     <!-- Body -->
     <div class="login-card-body">
       <!-- Digital ID section -->
-      <div class="login-method-helper center">ยืนยันตัวตนด้วย Digital ID ใช้งานทะเบียนราษฎร์และรายงานตัว นศท.</div>
+      <div class="login-method-helper center">กรณีเข้าด้วย Digital ID ใช้ได้ทั้งงานรับสมัครและรายงานตัว นศท.</div>
       <button
         type="button"
         class="btn btn-primary btn-block"
@@ -29,7 +29,7 @@
         หรือเข้าสู่ระบบด้วย{{ showSchoolLogin ? 'รหัสสถานศึกษาวิชาทหาร' : 'เลขประจำตัวประชาชน' }}
       </div> -->
       <div class="login-method-helper center" *ngIf="!showSchoolLogin">
-        เข้าระบบด้วยเลขประจำตัวประชาชนจะ<span style="color: red;">ไม่สามารถ</span>เรียกข้อมูลทะเบียนราษฎร์มาใช้สมัครเป็น นศท.ได้ (ใช้ได้เฉพาะรายงานตัว นศท.)
+        กรณีเข้าด้วยเลขประจำตัวประชาชนจะ<span style="color: red;">ไม่สามารถ</span>เรียกข้อมูลทะเบียนราษฎร์มาใช้สมัครเป็น นศท.ได้ (ใช้ได้เฉพาะรายงานตัว นศท.)
       </div>
 
       <!-- Login by PID -->
