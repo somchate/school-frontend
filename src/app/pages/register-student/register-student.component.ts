@@ -208,6 +208,16 @@ export class RegisterStudentComponent implements OnInit {
                 this.searchMessage = `ข้อมูลของ ${data.pid} มีรายชื่อสมัครผ่าน สถานศึกษา ${sch} แล้ว`;
               }
               this.personData = data;
+              // ดึง fname+middleName จาก Linkage2 เพื่ออัปเดตชื่อให้ครบ
+              this.studentRegisterService.fetchPersonNameLinkage2(this.searchPid).subscribe({
+                next: (lk) => {
+                  if (lk.fname && this.personData) {
+                    this.personData.fname = lk.fname;
+                    this.form.fname = lk.fname;
+                  }
+                },
+                error: () => { /* ถ้า Linkage2 ไม่ตอบ ใช้ชื่อจาก DB ต่อไป */ }
+              });
               this.handlePersonDataResult(data);
             },
             error: (err: any) => {
@@ -436,62 +446,45 @@ export class RegisterStudentComponent implements OnInit {
 
     const b = birthday.trim();
     let y: number | null = null;
-    let m: number | null = null;
-    let d: number | null = null;
 
-    // yyyy-MM-dd (usually CE)
-    const isoMatch = b.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (isoMatch) {
-      y = Number(isoMatch[1]);
-      m = Number(isoMatch[2]);
-      d = Number(isoMatch[3]);
+    // yyyyMMdd compact (Linkage2 returns this format, e.g. 25540718)
+    const compactMatch = b.match(/^(\d{4})(\d{2})(\d{2})$/);
+    if (compactMatch) {
+      y = Number(compactMatch[1]);
     }
 
-    // yyyyMMdd (could be CE or BE)
+    // yyyy-MM-dd
     if (y === null) {
-      const compactMatch = b.match(/^(\d{4})(\d{2})(\d{2})$/);
-      if (compactMatch) {
-        y = Number(compactMatch[1]);
-        m = Number(compactMatch[2]);
-        d = Number(compactMatch[3]);
+      const isoMatch = b.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (isoMatch) {
+        y = Number(isoMatch[1]);
       }
     }
 
-    // Try Date parsing as a fallback (e.g. ISO with time). If it's parseable, use those values.
-    if (y === null) {
-      const dt = new Date(b);
-      if (!isNaN(dt.getTime())) {
-        y = dt.getFullYear();
-        m = dt.getMonth() + 1;
-        d = dt.getDate();
-      }
-    }
-
-    // dd/MM/yyyy (could be BE or CE)
+    // dd/MM/yyyy
     if (y === null) {
       const parts = b.split('/');
       if (parts.length === 3) {
-        d = Number(parts[0]);
-        m = Number(parts[1]);
         y = Number(parts[2]);
       }
     }
 
-    if (!y || !m || !d) return null;
-    while (y >= 2400) {
-      y = y - 543;
+    // ISO with time fallback
+    if (y === null) {
+      const dt = new Date(b);
+      if (!isNaN(dt.getTime())) {
+        y = dt.getFullYear() + 543; // treat as CE, convert to BE
+      }
     }
 
-    const birthDate = new Date(y, m - 1, d);
-    if (isNaN(birthDate.getTime())) return null;
+    if (!y) return null;
 
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const mm = today.getMonth() - birthDate.getMonth();
-    if (mm < 0 || (mm === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
+    // Normalize: if CE (< 2400) convert to BE
+    let birthYearBE = y < 2400 ? y + 543 : y;
+
+    // อายุทางทหาร = ปีการศึกษา (BE) - ปีเกิด (BE)
+    const eduYearBE = Number(this.currentYear) || (new Date().getFullYear() + 543);
+    return eduYearBE - birthYearBE;
   }
 
   showTransferConfirm: boolean = false;

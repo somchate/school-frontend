@@ -194,11 +194,7 @@ export class PrintRegisterComponent implements OnInit {
 
     this.http.post(`${environment.apiUrl}/nst/report/rd`, body, { responseType: 'blob', headers }).subscribe({
       next: (blob) => {
-        const url = URL.createObjectURL(blob);
-        const win = window.open(url, '_blank');
-        if (win) {
-          win.onload = () => URL.revokeObjectURL(url);
-        }
+        this.downloadBlob(blob, `rd_${pid}.pdf`);
       },
       error: async (err) => {
         console.error('Error generating RD report:', err);
@@ -228,16 +224,21 @@ export class PrintRegisterComponent implements OnInit {
 
     this.http.post(`${environment.apiUrl}/nst/report/register`, body, { responseType: 'blob', headers }).subscribe({
       next: (blob) => {
-        const url = URL.createObjectURL(blob);
-        const win = window.open(url, '_blank');
-        if (win) {
-          win.onload = () => URL.revokeObjectURL(url);
-        }
+        this.downloadBlob(blob, `register_${this.currentYear}.pdf`);
       },
       error: async (err) => {
         console.error('Error generating report:', err);
         await this.dialogService.alert('เกิดข้อผิดพลาดในการสร้างรายงาน');
       }
     });
+  }
+
+  private downloadBlob(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
   }
 }

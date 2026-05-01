@@ -245,7 +245,8 @@ export class StudentRegisterService {
             p.pid = toStr(pid);
             p.titleId = pad(d1.titleCode, 3);
             p.titleDesc = toStr(d1.titleName || d1.titleDesc);
-            p.fname = toStr(d1.firstName);
+            const middleName = toStr(d1.middleName);
+            p.fname = middleName ? `${toStr(d1.firstName)} ${middleName}` : toStr(d1.firstName);
             p.lname = toStr(d1.lastName);
 
             const genderCode = Number(d1.genderCode);
@@ -344,9 +345,11 @@ export class StudentRegisterService {
           const s1 = items.find(it => it?.serviceID === 1);
           const d1 = s1?.responseData || {};
 
+          const middleName = toStr(d1.middleName);
+          const firstName = toStr(d1.firstName || d1.englishFirstName);
           observer.next({
             titleDesc: toStr(d1.titleDesc || d1.titleName || d1.englishTitleDesc),
-            fname: toStr(d1.firstName || d1.englishFirstName),
+            fname: middleName ? `${firstName} ${middleName}` : firstName,
             lname: toStr(d1.lastName || d1.englishLastName)
           });
           observer.complete();

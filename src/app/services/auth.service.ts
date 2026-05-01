@@ -54,7 +54,7 @@ export class AuthService {
   // ออกจากระบบ (จาก logout.jsp: processLogout → invalidate session → redirect login)
   logout(): void {
     const token = this.getToken();
-    // เรียก backend เพื่อ invalidate session (จาก bean.processLogout + session.invalidate ใน logout.jsp)
+    // เรียก backend เพื่อ invalidate session
     if (token) {
       const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
       this.http.post(`${this.API_URL}/auth/logout`, {}, { headers }).subscribe({
@@ -62,6 +62,11 @@ export class AuthService {
         error: () => {}
       });
     }
+    // signout Linkage2 client (fire-and-forget — ถ้า client ไม่รันก็ไม่ error)
+    this.http.post('http://localhost:15043/signout', {}).subscribe({
+      next: () => {},
+      error: () => {}
+    });
     localStorage.removeItem('token');
     localStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
