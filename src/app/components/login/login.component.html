@@ -12,7 +12,7 @@
     <!-- Body -->
     <div class="login-card-body">
       <!-- Digital ID section -->
-      <div class="login-method-helper">ยืนยันตัวตนด้วย Digital ID สำหรับผู้ใช้งานสถานศึกษาวิชาทหาร</div>
+      <div class="login-method-helper center">ยืนยันตัวตนด้วย Digital ID ใช้งานทะเบียนราษฎร์และรายงานตัว นศท.</div>
       <button
         type="button"
         class="btn btn-primary btn-block"
@@ -25,8 +25,11 @@
       <div class="divider"><span>หรือ</span></div>
 
       <!-- Password login -->
-      <div class="login-method-helper center">
+      <!-- <div class="login-method-helper center">
         หรือเข้าสู่ระบบด้วย{{ showSchoolLogin ? 'รหัสสถานศึกษาวิชาทหาร' : 'เลขประจำตัวประชาชน' }}
+      </div> -->
+      <div class="login-method-helper center" *ngIf="!showSchoolLogin">
+        เข้าระบบด้วยเลขประจำตัวประชาชนจะ<span style="color: red;">ไม่สามารถ</span>เรียกข้อมูลทะเบียนราษฎร์มาใช้สมัครเป็น นศท.ได้ (ใช้ได้เฉพาะรายงานตัว นศท.)
       </div>
 
       <!-- Login by PID -->
@@ -113,18 +116,15 @@
       </div>
 
       <!-- Toggle -->
-      <div class="login-toggle">
+      <!-- <div class="login-toggle">
         <a class="toggle-link" (click)="toggleLoginType()">
           <mat-icon>{{ showSchoolLogin ? 'person' : 'school' }}</mat-icon>
           <span>{{ showSchoolLogin ? 'ใช้เลขประจำตัวประชาชน' : 'ใช้รหัสสถานศึกษา' }}</span>
         </a>
-      </div>
+      </div> -->
 
       <!-- Footer links -->
       <div class="login-footer-links">
-        <a href="https://www.tdc.mi.th/download/manualSchool63-1.pdf" target="_blank">
-          <mat-icon>menu_book</mat-icon> ขั้นตอนปฏิบัติ
-        </a>
         <a href="https://www.tdc.mi.th/download/SchoolRegisterManual.pdf" target="_blank">
           <mat-icon>picture_as_pdf</mat-icon> คู่มือการใช้งาน
         </a>
@@ -142,13 +142,6 @@
           หน่วยบัญชาการรักษาดินแดน
         </p>
         <p class="copyright">© 2024 Territorial Defense Command. All rights reserved.</p>
-        <p class="recaptcha-legal">
-          This site is protected by reCAPTCHA and the Google
-          <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
-          and
-          <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>
-          apply.
-        </p>
       </div>
     </div>
   </div>
