@@ -1,10 +1,13 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
+import { interval, of, Subscription } from 'rxjs';
+import { catchError, timeout } from 'rxjs/operators';
 import { AuthService } from '../../../services/auth.service';
 import { DashboardService } from '../../../services/dashboard.service';
 import { SchoolInfoService } from '../../../services/school-info.service';
@@ -25,7 +28,7 @@ interface MenuItem {
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent implements OnInit, OnDestroy {
   @Output() itemSelected = new EventEmitter<void>();
 
   currentYear: string = '';
@@ -33,15 +36,20 @@ export class SidebarComponent implements OnInit {
   userAccessLevel: number = 0;
   schoolId: string = '';
   schoolName: string = '';
+  linkageAuthenticated: boolean | null = null;
+  private linkageCheck?: Subscription;
 
   constructor(
     private authService: AuthService,
     private router: Router,
+    private http: HttpClient,
     private dashboardService: DashboardService,
     private schoolInfoService: SchoolInfoService
   ) { }
 
   ngOnInit(): void {
+    this.checkLinkageStatus();
+    this.linkageCheck = interval(30000).subscribe(() => this.checkLinkageStatus());
     this.dashboardService.getYearEducate().subscribe({
       next: (res) => { this.currentYear = res.yearEducate; },
       error: () => {
@@ -169,5 +177,18 @@ export class SidebarComponent implements OnInit {
   isActive(route?: string): boolean {
     if (!route) return false;
     return this.router.url === route;
+  }
+
+  private checkLinkageStatus(): void {
+    this.http.get<any>('http://localhost:15043/health').pipe(
+      timeout(2000),
+      catchError(() => of({ status: 'error', isAuthenticated: false }))
+    ).subscribe(res => {
+      this.linkageAuthenticated = res?.status === 'healthy' && res?.isAuthenticated === true;
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.linkageCheck?.unsubscribe();
   }
 }

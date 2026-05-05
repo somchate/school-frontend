@@ -1,12 +1,14 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Dialog } from '@angular/cdk/dialog';
 import { finalize } from 'rxjs/operators';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, interval, of, Subscription } from 'rxjs';
+import { catchError, timeout } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 import { LoginType, LoginRequest } from '../../models/auth.model';
 import { DialogService } from '../../services/dialog.service';
@@ -34,7 +36,7 @@ const RECAPTCHA_SCRIPT_ID = 'recaptcha-v3-script';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnDestroy {
+export class LoginComponent implements OnInit, OnDestroy {
   schoolId: string = '';
   passwordSid: string = '';
   upid: string = '';
@@ -42,15 +44,32 @@ export class LoginComponent implements OnDestroy {
   errorMessage: string = '';
   showSchoolLogin: boolean = false;
   loading: boolean = false;
+  linkageAuthenticated: boolean | null = null;
 
   private recaptchaReadyPromise: Promise<void> | null = null;
+  private linkageCheck?: Subscription;
 
   constructor(
     private authService: AuthService,
     private router: Router,
+    private http: HttpClient,
     private dialogService: DialogService,
     private cdkDialog: Dialog
   ) {}
+
+  ngOnInit(): void {
+    this.checkLinkageStatus();
+    this.linkageCheck = interval(30000).subscribe(() => this.checkLinkageStatus());
+  }
+
+  private checkLinkageStatus(): void {
+    this.http.get<any>('http://localhost:15043/health').pipe(
+      timeout(2000),
+      catchError(() => of({ status: 'error', isAuthenticated: false }))
+    ).subscribe(res => {
+      this.linkageAuthenticated = res?.status === 'healthy' && res?.isAuthenticated === true;
+    });
+  }
 
   /** เปิด dialog บังคับเปลี่ยนรหัสผ่านเมื่อผู้ใช้ยังคงใช้รหัสผ่านเริ่มต้น (123) */
   private async promptForcePasswordChange(oldPassword: string): Promise<void> {
@@ -69,6 +88,7 @@ export class LoginComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.linkageCheck?.unsubscribe();
     const badge = document.querySelector('.grecaptcha-badge');
     if (badge) {
       badge.remove();

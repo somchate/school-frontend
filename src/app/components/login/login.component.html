@@ -7,6 +7,12 @@
         <h1>ระบบงานทะเบียนพล นศท.</h1>
         <p class="subtitle">หน่วยบัญชาการรักษาดินแดน (ส่วนงานสถานศึกษาวิชาทหาร)</p>
       </div>
+      <div class="lk-status-badge">
+        <span class="lk-dot"
+              [class.green]="linkageAuthenticated === true"
+              [class.red]="linkageAuthenticated === false"></span>
+        <span class="lk-text">LK</span>
+      </div>
     </div>
 
     <!-- Body -->
@@ -128,9 +134,24 @@
         <a href="https://www.tdc.mi.th/download/SchoolRegisterManual.pdf" target="_blank">
           <mat-icon>picture_as_pdf</mat-icon> คู่มือการใช้งาน
         </a>
-        <a href="https://www.tdc.mi.th/download/Linkage2ClientSetup(School).exe" target="_blank">
-          <mat-icon>download</mat-icon> Download LK2-Client
-        </a>
+        <span class="lk2-download-group">
+          <mat-icon class="lk2-download-icon">download</mat-icon>
+          <span class="lk2-label">LK2-Client</span>
+          <span class="lk2-os-group">
+            Win10
+            <a href="https://www.tdc.mi.th/download/Linkage2Client-1.1-win10-x64.zip" target="_blank">(x64</a>
+            <a href="https://www.tdc.mi.th/download/Linkage2Client-1.1-win10-x86.zip" target="_blank">x86)</a>
+          </span>
+          <span class="lk2-os-group">
+            Win7
+            <a href="https://www.tdc.mi.th/download/Linkage2Client-1.1-win7-x64.zip" target="_blank">(x64</a>
+            <a href="https://www.tdc.mi.th/download/Linkage2Client-1.1-win7-x86.zip" target="_blank">x86)</a>
+          </span>
+          <span class="lk2-os-group">
+            macOS
+            <a href="https://www.tdc.mi.th/download/Linkage2Client-1.1-osx-arm64.zip" target="_blank">(ARM64)</a>
+          </span>
+        </span>
       </div>
 
       <div class="login-foot-note">

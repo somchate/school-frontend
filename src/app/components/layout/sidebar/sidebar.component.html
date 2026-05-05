@@ -37,6 +37,12 @@
 
   <div class="sidebar-footer">
     <mat-divider></mat-divider>
+    <div class="linkage-status">
+      <span class="linkage-dot"
+            [class.green]="linkageAuthenticated === true"
+            [class.red]="linkageAuthenticated === false"></span>
+      <span class="linkage-label">Linkage Status</span>
+    </div>
     <div class="year-display">
       <div class="year-label">ปีการศึกษา</div>
       <div class="year">{{ currentYear }}</div>

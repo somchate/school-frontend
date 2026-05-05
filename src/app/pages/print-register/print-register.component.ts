@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import * as XLSX from 'xlsx';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -231,6 +232,37 @@ export class PrintRegisterComponent implements OnInit {
         await this.dialogService.alert('เกิดข้อผิดพลาดในการสร้างรายงาน');
       }
     });
+  }
+
+  exportExcel(): void {
+    if (this.selectedPids.size === 0) {
+      this.dialogService.alert('กรุณาเลือก นศท. ที่ต้องการส่งออก Excel');
+      return;
+    }
+
+    const selectedList = this.nstList.filter(n => this.selectedPids.has(n.regPid));
+    const psnLabel = this.psnStatusOptions.find(o => o.value === this.psnStatus)?.label || this.psnStatus;
+
+    const rows = selectedList.map((n, i) => ({
+      'ลำดับ': i + 1,
+      'เลข ปชช.': n.regPid,
+      'เลข นศท.': n.nstId || '',
+      'คำนำหน้า': n.regTitle || '',
+      'ชื่อ': n.regFname || '',
+      'สกุล': n.regLname || '',
+      'พ.ศ.เกิด': n.regBirthday || '',
+      'ประเภท': psnLabel,
+      'ชั้นปี': this.atClass || '-',
+      'เพศ': n.regSex === 'M' ? 'ชาย' : n.regSex === 'F' ? 'หญิง' : ''
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const colWidths = [8, 16, 14, 10, 16, 16, 10, 28, 8, 6];
+    ws['!cols'] = colWidths.map(w => ({ wch: w }));
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'นศท.');
+    XLSX.writeFile(wb, `register_${this.currentYear}_${this.psnStatus}.xlsx`);
   }
 
   private downloadBlob(blob: Blob, filename: string): void {

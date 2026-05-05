@@ -54,6 +54,11 @@
         <mat-icon>print</mat-icon>
         พิมพ์ที่เลือก ({{ selectedPids.size }})
       </button>
+      <button mat-flat-button color="primary" class="header-action" (click)="exportExcel()"
+        [disabled]="isLoading || nstList.length === 0 || selectedPids.size === 0">
+        <mat-icon>table_view</mat-icon>
+        ส่งออก Excel ({{ selectedPids.size }})
+      </button>
     </mat-card-header>
     <mat-card-content>
       <div *ngIf="isLoading" class="loading">
