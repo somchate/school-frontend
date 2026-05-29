@@ -139,6 +139,16 @@ export interface StudentFormData {
   armyNote: string;          // หมายเหตุภูมิลำเนาทหาร
 }
 
+// ผลตรวจสอบรายชื่อ นศท. จาก PID (MIA_NST_REGISTER)
+export interface NstCheckResult {
+  exists: boolean;
+  nstId?: string;
+  fname?: string;
+  lname?: string;
+  schoolId?: string;
+  schoolName?: string;
+}
+
 // ข้อมูลตัวเลือก dropdown
 export interface LookupItem {
   id: string;
@@ -182,6 +192,12 @@ export class StudentRegisterService {
       .set('year', year)
       .set('mode', mode);
     return this.http.get<PersonData>(`${this.API_URL}/student/searchByPid`, { params });
+  }
+
+  // ตรวจสอบว่า PID มีรายชื่อเป็น นศท. อยู่แล้วหรือไม่ (MIA_NST_REGISTER.REG_PID)
+  checkNstByPid(pid: string): Observable<NstCheckResult> {
+    const params = new HttpParams().set('pid', pid);
+    return this.http.get<NstCheckResult>(`${this.API_URL}/nst/checkPid`, { params });
   }
 
   searchByPidLinkage2(pid: string): Observable<Partial<PersonData>> {

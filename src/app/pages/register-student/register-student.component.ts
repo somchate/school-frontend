@@ -9,7 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, firstValueFrom } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import {
   StudentRegisterService,
@@ -231,7 +231,24 @@ export class RegisterStudentComponent implements OnInit {
           return;
         }
 
-        // ไม่พบในฐานข้อมูล → ถามผู้ใช้ก่อนว่าต้องการค้นจากทะเบียนราษฎร์ (Linkage) หรือไม่
+        // ไม่พบในฐานข้อมูลผู้สมัคร → ตรวจสอบก่อนว่าเลขประจำตัวประชาชนมีรายชื่อเป็น นศท. อยู่แล้วหรือไม่
+        try {
+          const nstCheck = await firstValueFrom(this.studentRegisterService.checkNstByPid(this.searchPid));
+          if (nstCheck?.exists) {
+            this.isSearching = false;
+            this.searchMessage = `เลขประจำตัวประชาชน ${this.searchPid} มีรายชื่อเป็น นศท. อยู่แล้ว กรุณาตรวจสอบข้อมูล`;
+            this.searchMessageType = 'error';
+            return;
+          }
+        } catch (err) {
+          console.error('Error checking NST by pid:', err);
+          this.isSearching = false;
+          this.searchMessage = 'ไม่สามารถตรวจสอบข้อมูล นศท. ได้ กรุณาลองใหม่อีกครั้ง';
+          this.searchMessageType = 'error';
+          return;
+        }
+
+        // ไม่พบทั้งในฐานข้อมูลผู้สมัครและรายชื่อ นศท. → ถามผู้ใช้ก่อนว่าต้องการค้นจากทะเบียนราษฎร์ (Linkage) หรือไม่
         this.isSearching = false;
         const proceed = await this.dialogService.confirm(
           'ไม่พบข้อมูลผู้สมัครในฐานข้อมูล\n\nต้องการค้นหาจากฐานข้อมูลทะเบียนราษฎร์ (Linkage) หรือไม่?',
